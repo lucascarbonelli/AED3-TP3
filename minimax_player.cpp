@@ -15,11 +15,10 @@
 int minimax(Board &b, bool miniMax){
     int result;
 
-    if(b.getPieces() == 0 || b.isBoardFull()){
-        if(b.didIWin()) {result = 1;}
-        else if(b.didILost()) {result = -1;}
-        else{result = 0;}
-    }else{
+    if(b.didIWin()) {result = 1;}
+    else if(b.didILost()) {result = -1;}
+    else if(b.getPieces() == 0 || b.isBoardFull()) {result = 0;} // Empate
+    else{
         if(miniMax){
             // Buscamos maximizar
             result = -1;
