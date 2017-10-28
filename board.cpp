@@ -118,14 +118,155 @@ void Board::addPlayer(int col){
     _p--; // Dismiuye la cantidad de fichas
 }
 
-
 void Board::addOpponent(int col){
     int row = 0;
-    
+
         while(_board[row][col] != EMPTY){
             row++;
         }
-    
+
         _board[row][col] = OPPONENT;
         _p--; // Dismiuye la cantidad de fichas
 }
+
+
+
+/*********************************************************/
+
+void Board::backtrack(int col){
+
+  if(isColFull(col)){
+    _board[_rows - 1][col] = EMPTY;
+  } else {
+    int row = 0;
+    while(_board[row][col] != EMPTY){
+        row++;
+    }
+    _board[row-1][col] = EMPTY;
+  }
+
+  _p++; // Aumenta la cantidad de fichas
+
+}
+
+
+/*********************************************************/
+/*********************** FEATURES ************************/
+/*********************************************************/
+
+
+
+unsigned int Board::linesOfSize(int n, int player){
+
+/* Calcula para un tablero dado la cantidad de lineas de
+ * longitud *n* que formo el jugador *player*.
+ *
+ * Debe cumplirse: 0 < n < _c
+ */
+
+
+  unsigned int count = 0;
+  // Chequear lineas horizontales
+  for(int i = 0; i < _rows; i++){
+      for(int j = 0; j < _cols - n + 1; j++){
+          bool same_player = true;
+          for(int k = 0; k < n; k++){
+              if(_board[i][j + k] != player){ same_player = false; }
+          }
+          /* Nos fijamos que la linea no forme parte de otra linea de mayor tamaño. */
+          //if(_board[i][j + n] == player) same_player = false;
+          if(same_player) count++;
+      }
+  }
+
+  // Chequear lineas verticales
+  for(int i = 0; i < _rows - n + 1; i++){
+      for(int j = 0; j < _cols; j++){
+          bool same_player = true;
+          for(int k = 0; k < n; k++){
+              if(_board[i + k][j] != player){ same_player = false; }
+          }
+          /* Nos fijamos que la linea no forme parte de otra linea de mayor tamaño. */
+          //if(_board[i + n][j] == player) same_player = false;
+          if(same_player) count++;
+      }
+  }
+
+  // Chequear lineas diagonales (/)
+  for(int i = 0; i < _rows - n + 1; i++){
+      for(int j = 0; j < _cols - n + 1; j++){
+          bool same_player = true;
+          for(int k = 0; k < n; k++){
+              if(_board[i + k][j + k] != player){ same_player = false; }
+          }
+          /* Nos fijamos que la linea no forme parte de otra linea de mayor tamaño. */
+          //if(_board[i + n][j + n] == player) same_player = false;
+          if(same_player) count++;
+      }
+  }
+
+  // Chequear lineas diagonales (\)
+  for(int i = 0; i < _rows - n + 1; i++){
+      for(int j = 0; j < _cols - n + 1; j++){
+          bool same_player = true;
+          for(int k = 0; k < n; k++){
+              if(_board[i + k][_cols - (j + k) - 1] != player){ same_player = false; }
+          }
+          /* Nos fijamos que la linea no forme parte de otra linea de mayor tamaño. */
+          //if(_board[i + n][_cols - (j + n) - 1]  == player) same_player = false;
+          if(same_player) count++;
+      }
+  }
+  return count;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//

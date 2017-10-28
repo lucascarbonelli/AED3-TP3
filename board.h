@@ -20,6 +20,10 @@ public:
     void addPlayer(int col);
     void addOpponent(int col);
 
+    /* Agregadas por nosotros: */
+    void backtrack(int col);
+    unsigned int linesOfSize(int n, int player);
+
 private:
     std::vector<std::vector<int> > _board;
     int _cols;

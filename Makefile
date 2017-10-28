@@ -1,7 +1,10 @@
 CPP=g++
 FLAGS= -std=c++11 -g -Wall
 
-all: minimax_player random_player minimax_alpha_beta_player
+all: minimax_player random_player minimax_alpha_beta_player parametric_player
+
+parametric_player: parametricPlayer.cpp board.o
+	$(CPP) $(FLAGS) -o $@ $< board.o
 
 minimax_player: minimax_player.cpp board.o
 	$(CPP) $(FLAGS) -o $@ $< board.o
