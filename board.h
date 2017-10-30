@@ -6,7 +6,7 @@
 #define EMPTY 0
 #define PLAYER 1
 #define OPPONENT 2
-
+using namespace std;
 class Board{
 public:
     Board(int cols, int rows, int c, int p);
@@ -22,7 +22,14 @@ public:
 
     /* Agregadas por nosotros: */
     void backtrack(int col);
+    int horizonal(int i, int j, int player);
+    int vertical(int i, int j, int player);
+    int diagonalR(int i, int j, int player);
+    int diagonalL(int i, int j, int player);
+    vector<int> lineCounts(int player);
     unsigned int linesOfSize(int n, int player);
+    vector<int> possibleMoves();
+    vector<int> player_prof(unsigned int player);
 
 private:
     std::vector<std::vector<int> > _board;

@@ -47,9 +47,53 @@ std::string read_str() {
     return msg;
 }
 
+
+
+
+
+
 /* Template de la funcion  */
 
-int generateAndScore(Board &b, unsigned int player,int c, vector<int>& weights, ofstream& log ){
+
+int scoreBoard(Board &b, int player, vector<int>& weights){
+
+  size_t feature = 0;
+  int score = 0;
+
+  /* Lineas del jugador */
+  vector<int> player_lines = b.lineCounts(PLAYER);
+  for (size_t i = 0; i < player_lines.size(); i++) {
+    score += weights[feature] * player_lines[i];
+    feature++;
+  }
+
+  /* Perfiles  */
+  vector<int> player_profile = b.player_prof(PLAYER);
+  for (size_t i = 0; i < player_profile.size(); i++) {
+    score += weights[feature] * player_profile[i];
+    feature++;
+  }
+
+  vector<int> opponent_profile = b.player_prof(OPPONENT);
+  for (size_t i = 0; i < opponent_profile.size(); i++) {
+    score += weights[feature] * opponent_profile[i];
+    feature++;
+  }
+
+
+  /* didIWin? */
+  score += weights[feature] * b.didIWin();
+  feature++;
+  /* didILost? */
+  score += weights[feature] * b.didILost();
+  return score;
+}
+
+
+
+
+
+int generateAndScore(Board &b, int player,int c, vector<int>& weights, ofstream& log ){
 
   int best_move = 0;
   int best_move_score = -INFINITY;
@@ -58,11 +102,8 @@ int generateAndScore(Board &b, unsigned int player,int c, vector<int>& weights, 
     if( !b.isColFull(col) ){
       /* Miramos el tablero al agregar en la columna col */
       b.addPlayer(col);
-      int score = 0;
-      for (int l = 2; l <= c; l++) {
-        log << "found " << b.linesOfSize(l,PLAYER) << "lines of size " << l << endl;
-        score += b.linesOfSize(l,PLAYER) * weights[l-1];
-      }
+      int score = scoreBoard(b,player,weights);
+
       log << "move: " << col << " score: " << score <<endl;
       if(score > best_move_score){
         best_move = col;
@@ -98,11 +139,20 @@ int main() {
 
         Board board(columns, rows, c, 2*p); // 2*p fichas en total
         /* Inicializamos los pesos */
-        vector<int> weights(2*c,0);
-        for (int i = 0; i < c; i++) {
-          weights[i] = i+1;
+        vector<int> weights(3*c,0);
+
+        for (int i = 0; i < c - 1; i++) {
+          weights[i] = exp(i);
         }
-        weights[c] = INFINITY;
+        for (int i = c; i < 2*(columns - 1); i++) {
+          weights[i] = exp(i);
+        }
+        for (int i = c; i < 2*(columns - 1); i++) {
+          weights[i] = -exp(i);
+        }
+
+        weights[3*c-1] = INFINITY;
+        weights[3*c] = -INFINITY;
 
         // Primer movimiento
         go_first = read_str();
