@@ -55,7 +55,7 @@ std::string read_str() {
 /* Template de la funcion  */
 
 
-int scoreBoard(Board &b, int player, vector<int>& weights){
+int scoreBoard(Board &b, int player, vector<int>& weights, ofstream& log){
 
   size_t feature = 0;
   int score = 0;
@@ -63,6 +63,7 @@ int scoreBoard(Board &b, int player, vector<int>& weights){
   /* Lineas del jugador */
   vector<int> player_lines = b.lineCounts(PLAYER);
   for (size_t i = 0; i < player_lines.size(); i++) {
+    log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
     score += weights[feature] * player_lines[i];
     feature++;
   }
@@ -70,12 +71,14 @@ int scoreBoard(Board &b, int player, vector<int>& weights){
   /* Perfiles  */
   vector<int> player_profile = b.player_prof(PLAYER);
   for (size_t i = 0; i < player_profile.size(); i++) {
-    score += weights[feature] * player_profile[i];
+    log << "si muevo a "<< i <<" "<< "puedo hacer una linea de longitud "  << player_profile[i] << endl;
+    //score += weights[feature] * player_profile[i];
     feature++;
   }
 
   vector<int> opponent_profile = b.player_prof(OPPONENT);
   for (size_t i = 0; i < opponent_profile.size(); i++) {
+    log << "si el mueve a "<< i <<" "<< "puede hacer una linea de longitud "  << opponent_profile[i] << endl;
     score += weights[feature] * opponent_profile[i];
     feature++;
   }
@@ -85,7 +88,7 @@ int scoreBoard(Board &b, int player, vector<int>& weights){
   score += weights[feature] * b.didIWin();
   feature++;
   /* didILost? */
-  score += weights[feature] * b.didILost();
+  //score += weights[feature] * b.didILost();
   return score;
 }
 
@@ -102,14 +105,14 @@ int generateAndScore(Board &b, int player,int c, vector<int>& weights, ofstream&
     if( !b.isColFull(col) ){
       /* Miramos el tablero al agregar en la columna col */
       b.addPlayer(col);
-      int score = scoreBoard(b,player,weights);
+      int score = scoreBoard(b,player,weights,log);
 
       log << "move: " << col << " score: " << score <<endl;
       if(score > best_move_score){
         best_move = col;
         best_move_score = score;
       }
-      /* Sacamos la ficha que pusimo */
+      /* Sacamos la ficha que pusimos */
       b.backtrack(col);
     }
   }
@@ -139,20 +142,20 @@ int main() {
 
         Board board(columns, rows, c, 2*p); // 2*p fichas en total
         /* Inicializamos los pesos */
-        vector<int> weights(3*c,0);
+        vector<int> weights(c + 2*columns+1,0);
 
         for (int i = 0; i < c - 1; i++) {
           weights[i] = exp(i);
         }
-        for (int i = c; i < 2*(columns - 1); i++) {
-          weights[i] = exp(i);
+        for (int i = c; i < c + columns; i++) {
+          weights[i] = exp(i-c+1);
         }
-        for (int i = c; i < 2*(columns - 1); i++) {
-          weights[i] = -exp(i);
+        for (int i = c + columns; i < c + 2*columns ; i++) {
+          weights[i] = -exp(i-2*c+5);
         }
 
-        weights[3*c-1] = INFINITY;
-        weights[3*c] = -INFINITY;
+        weights[c+2*columns] = INFINITY;
+        //weights[3*c] = -INFINITY;
 
         // Primer movimiento
         go_first = read_str();

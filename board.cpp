@@ -236,16 +236,16 @@ vector<int> Board::lineCounts(int player){
     for (int j = 0; j < _cols; j++) {
       if(_board[i][j] == player){
         count[horizonal(i,j,player)]++;
-        count[vertical(i,j,player)]++;
-        count[diagonalL(i,j,player)]++;
-        count[diagonalR(i,j,player)]++;
+        if(vertical(i,j,player) > 1) count[vertical(i,j,player)]++;
+        if(diagonalL(i,j,player) > 1) count[diagonalL(i,j,player)]++;
+        if(diagonalR(i,j,player) > 1) count[diagonalR(i,j,player)]++;
       }
     }
   }
 
-  for (int i = 0; i < count.size(); i++) {
+  for (int i = 1; i < count.size(); i++) {
     /* eliminamos repetidos */
-    count[i] = count[i] / (i+1);
+    count[i] = count[i] / i;
   }
   return count;
 }
