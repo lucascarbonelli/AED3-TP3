@@ -86,9 +86,6 @@ int scoreBoard(Board &b, int player, vector<int>& weights, ofstream& log){
 
   /* didIWin? */
   score += weights[feature] * b.didIWin();
-  feature++;
-  /* didILost? */
-  //score += weights[feature] * b.didILost();
   return score;
 }
 
@@ -129,6 +126,7 @@ int main() {
 
     /* Guardamos un log de las decision en log.txt */
     ofstream log("log.txt");
+    int won = 0, lost = 0, tied = 0;
 
 
     while (true) {
@@ -145,17 +143,16 @@ int main() {
         vector<int> weights(c + 2*columns+1,0);
 
         for (int i = 0; i < c - 1; i++) {
-          weights[i] = exp(i);
+          weights[i] = i;
         }
         for (int i = c; i < c + columns; i++) {
           weights[i] = exp(i-c+1);
         }
         for (int i = c + columns; i < c + 2*columns ; i++) {
-          weights[i] = -exp(i-2*c+5);
+          weights[i] = -5*i;
         }
 
         weights[c+2*columns] = INFINITY;
-        //weights[3*c] = -INFINITY;
 
         // Primer movimiento
         go_first = read_str();
@@ -170,7 +167,11 @@ int main() {
         while (true) {
             msg = read_str();
             if (msg == "ganaste" || msg == "perdiste" || msg == "empataron") {
+                if(msg == "ganaste") won++;
+                if(msg == "perdiste") lost++;
+                if(msg == "empataron") tied++;
                 break;
+
             }
             log << "mi turno " << endl;
             board.addOpponent(std::stoi(msg));
@@ -178,9 +179,12 @@ int main() {
             log << "move \n" << move <<  endl;
             board.addPlayer(move);
             send(move);
-
         }
+        //res << "Ganados: "<< won << " | " << "Perdidos: " << lost << " | " << "Empatados: " << tied <<endl;
+        ofstream res("res.txt");
+        res << won << endl << lost << endl << tied << endl;
     }
+    //
 
     return 0;
 }

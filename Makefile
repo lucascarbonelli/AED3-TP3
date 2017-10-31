@@ -1,7 +1,10 @@
 CPP=g++
 FLAGS= -std=c++11 -g -Wall
 
-all: minimax_player random_player minimax_alpha_beta_player parametric_player
+all: minimax_player random_player minimax_alpha_beta_player parametric_player optimizer
+
+optimizer:
+	g++ -std=c++11 optimizer.cpp -o optimizer
 
 parametric_player: parametricPlayer.cpp board.o
 	$(CPP) $(FLAGS) -o $@ $< board.o
@@ -19,4 +22,4 @@ random_player:
 	$(CPP) $(FLAGS) -c -o $@ $<
 
 clean:
-	rm -f minimax_player minimax_alpha_beta_player random_player *.o *~
+	rm -f minimax_player minimax_alpha_beta_player random_player optimizer *.o *~
