@@ -15,7 +15,7 @@ using namespace std;
 
 
 /* Para jugar contra parametric_player :
->> python c_linea.py --blue_player ./parametric_player --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
+>> python c_linea.py --blue_player ./parametric_player 10 12 -1000 -100 10 100 -50 -10 -10 -50 -100 -100 -1000 -1000 --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
 */
 
 
@@ -55,7 +55,7 @@ std::string read_str() {
 /* Template de la funcion  */
 
 
-int scoreBoard(Board &b, int player, vector<int>& weights, ofstream& log){
+int scoreBoard(Board &b, int player, vector<int>& weights/*, ofstream& log*/){
 
   size_t feature = 0;
   int score = 0;
@@ -63,22 +63,16 @@ int scoreBoard(Board &b, int player, vector<int>& weights, ofstream& log){
   /* Lineas del jugador */
   vector<int> player_lines = b.lineCounts(PLAYER);
   for (size_t i = 0; i < player_lines.size(); i++) {
-    log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
+    //log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
     score += weights[feature] * player_lines[i];
     feature++;
   }
 
   /* Perfiles  */
-  vector<int> player_profile = b.player_prof(PLAYER);
-  for (size_t i = 0; i < player_profile.size(); i++) {
-    log << "si muevo a "<< i <<" "<< "puedo hacer una linea de longitud "  << player_profile[i] << endl;
-    //score += weights[feature] * player_profile[i];
-    feature++;
-  }
 
   vector<int> opponent_profile = b.player_prof(OPPONENT);
   for (size_t i = 0; i < opponent_profile.size(); i++) {
-    log << "si el mueve a "<< i <<" "<< "puede hacer una linea de longitud "  << opponent_profile[i] << endl;
+    //log << "si el mueve a "<< i <<" "<< "puede hacer una linea de longitud "  << opponent_profile[i] << endl;
     score += weights[feature] * opponent_profile[i];
     feature++;
   }
@@ -93,7 +87,7 @@ int scoreBoard(Board &b, int player, vector<int>& weights, ofstream& log){
 
 
 
-int generateAndScore(Board &b, int player,int c, vector<int>& weights, ofstream& log ){
+int generateAndScore(Board &b, int player,int c, vector<int>& weights/*, ofstream& log*/ ){
 
   int best_move = 0;
   int best_move_score = -INFINITY;
@@ -102,9 +96,9 @@ int generateAndScore(Board &b, int player,int c, vector<int>& weights, ofstream&
     if( !b.isColFull(col) ){
       /* Miramos el tablero al agregar en la columna col */
       b.addPlayer(col);
-      int score = scoreBoard(b,player,weights,log);
+      int score = scoreBoard(b,player,weights);
 
-      log << "move: " << col << " score: " << score <<endl;
+      //log << "move: " << col << " score: " << score <<endl;
       if(score > best_move_score){
         best_move = col;
         best_move_score = score;
@@ -113,21 +107,37 @@ int generateAndScore(Board &b, int player,int c, vector<int>& weights, ofstream&
       b.backtrack(col);
     }
   }
-  log << "Chose " << best_move << " with score " << best_move_score<< endl;
+  //log << "Chose " << best_move << " with score " << best_move_score<< endl;
   return best_move;
 }
 
 
 
-int main() {
+int main(int argc, const char* argv[]) {
+
+    int iters;
+    if(argc >= 2){
+      iters = atoi(argv[1]);
+    }
+
+    vector<int> weights;
+    if(argc >= 3){
+      int params = atoi(argv[2]);
+      for (size_t i = 0; i < params; i++) {
+        weights.push_back(atoi(argv[3+i]));
+      }
+    }
 
     std::string msg, color, oponent_color, go_first;
     int columns, rows, c, p, move;
 
-    /* Guardamos un log de las decision en log.txt */
-    ofstream log("log.txt");
-    int won = 0, lost = 0, tied = 0;
 
+    /* Guardamos un log de las decision en log.txt */
+    //ofstream log("log.txt");
+    ofstream res("res.txt");
+    //log << iters << endl;
+    int won = 0, lost = 0, tied = 0;
+    bool imBlue = false;
 
     while (true) {
         color = read_str();
@@ -139,27 +149,14 @@ int main() {
         p = read_int();
 
         Board board(columns, rows, c, 2*p); // 2*p fichas en total
-        /* Inicializamos los pesos */
-        vector<int> weights(c + 2*columns+1,0);
-
-        for (int i = 0; i < c - 1; i++) {
-          weights[i] = i;
-        }
-        for (int i = c; i < c + columns; i++) {
-          weights[i] = exp(i-c+1);
-        }
-        for (int i = c + columns; i < c + 2*columns ; i++) {
-          weights[i] = -5*i;
-        }
-
-        weights[c+2*columns] = INFINITY;
 
         // Primer movimiento
         go_first = read_str();
         if (go_first == "vos"){
-          log << "started \n" << endl;
-          move = generateAndScore(board,PLAYER,c,weights,log);
-          log << "move \n" << move <<  endl;
+          imBlue = true;
+          //log << "started \n" << endl;
+          move = generateAndScore(board,PLAYER,c,weights);
+          //log << "move \n" << move <<  endl;
           board.addPlayer(move);
           send(move);
         }
@@ -173,18 +170,17 @@ int main() {
                 break;
 
             }
-            log << "mi turno " << endl;
+            //log << "mi turno " << endl;
             board.addOpponent(std::stoi(msg));
-            move = generateAndScore(board,PLAYER,c,weights,log);
-            log << "move \n" << move <<  endl;
+            move = generateAndScore(board,PLAYER,c,weights);
+            //log << "move \n" << move <<  endl;
             board.addPlayer(move);
             send(move);
         }
-        //res << "Ganados: "<< won << " | " << "Perdidos: " << lost << " | " << "Empatados: " << tied <<endl;
-        ofstream res("res.txt");
-        res << won << endl << lost << endl << tied << endl;
+        iters--;
+        if (iters == 0 && imBlue) res << won << endl << lost << endl << tied << endl;
     }
-    //
+
 
     return 0;
 }
