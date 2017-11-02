@@ -9,13 +9,18 @@
 #include <limits>
 #include "board.h"
 #include <vector>
+#include <algorithm>    // std::sort
 
 #define INFINITY std::numeric_limits<int>::max();
 using namespace std;
 
 
 /* Para jugar contra parametric_player :
->> python c_linea.py --blue_player ./parametric_player 10 12 -1000 -100 10 100 -50 -10 -10 -50 -100 -100 -1000 -1000 --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
+>> python c_linea.py --blue_player ./parametric_player 10 12 -1 1 4 15 100 -4 3 -4 3 -2 2 1000000 --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
+
+>>python c_linea.py --blue_player ./parametric_player 10 12 0 -100 1000 0 10 -100 1000 -10 50 10 1000 50 --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
+0 -100 1000 0 10 -100 1000 -10 50 10 1000 50
+
 */
 
 
@@ -133,14 +138,18 @@ int main(int argc, const char* argv[]) {
 
 
     /* Guardamos un log de las decision en log.txt */
-    //ofstream log("log.txt");
+    ofstream log("log.txt");
     ofstream res("res.txt");
     //log << iters << endl;
     int won = 0, lost = 0, tied = 0;
     bool imBlue = false;
+    vector<int> loosing_time;
+    vector<int> winning_time;
 
     while (true) {
+        int t = 0;
         color = read_str();
+        if(color == "azul") imBlue = true;
         oponent_color = read_str();
 
         columns = read_int();
@@ -154,18 +163,25 @@ int main(int argc, const char* argv[]) {
         go_first = read_str();
         if (go_first == "vos"){
           imBlue = true;
-          //log << "started \n" << endl;
+          log << "started \n" << endl;
           move = generateAndScore(board,PLAYER,c,weights);
           //log << "move \n" << move <<  endl;
           board.addPlayer(move);
           send(move);
+          t++;
         }
 
         while (true) {
             msg = read_str();
             if (msg == "ganaste" || msg == "perdiste" || msg == "empataron") {
-                if(msg == "ganaste") won++;
-                if(msg == "perdiste") lost++;
+                if(msg == "ganaste"){
+                   won++;
+                   winning_time.push_back(t);
+                 }
+                if(msg == "perdiste") {
+                   lost++;
+                   loosing_time.push_back(t);
+                 }
                 if(msg == "empataron") tied++;
                 break;
 
@@ -178,7 +194,15 @@ int main(int argc, const char* argv[]) {
             send(move);
         }
         iters--;
-        if (iters == 0 && imBlue) res << won << endl << lost << endl << tied << endl;
+        if (iters == 0 && imBlue) {
+          /* mediana del winning time */
+          sort(winning_time.begin(), winning_time.end());
+          int mean_winning_time = won > 0 ? winning_time[won/2] : 0;
+
+          sort(loosing_time.begin(),loosing_time.end());
+          int mean_loosing_time = lost > 0 ? loosing_time[lost/2] : 0;
+
+          res << won << endl << lost << endl << tied << endl;}
     }
 
 
