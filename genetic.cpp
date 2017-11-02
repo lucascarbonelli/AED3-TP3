@@ -20,7 +20,7 @@ void init_population(vector<individual>& population){
 
 
 
-void selection_helix(int n, int m , int c, int p, bool red_player_first, vector<individual>& population, vector<individual>& new_population, int news, int breeds, string fitness, int iter, int quantInd_a_Cross){
+void selection_helix(int n, int m , int c, int p, bool red_player_first, vector<individual>& population, vector<individual>& new_population, int news, int breeds, string fitness, int iter, int quantInd_a_Cross, int probMut, int maxMut){
 
   for (int i = 0; i < news; ++i){
     new_population.push_back(population[population.size()-1-i]);
@@ -43,6 +43,10 @@ void selection_helix(int n, int m , int c, int p, bool red_player_first, vector<
   for (int i = 0; i < breeds; ++i){
     new_population.push_back(old_better_ones[i]);
   }
+
+  mutation(new_population, probMut, maxMut);
+
+  //save_population(new_population, n, m, c, p);
 
 }
 
@@ -69,7 +73,6 @@ void get_better_ones(int n, int m , int c, int p, bool red_player_first, int ite
   for (int i = 0; i < better_ones.size(); ++i){
     better_ones[i] = population[scores[population.size()-1-i].second];
   }
-
 }
 
 //este método mezcla los individuos entre dos populations
