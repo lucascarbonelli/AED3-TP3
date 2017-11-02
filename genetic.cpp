@@ -27,7 +27,7 @@ void init_population(vector<individual>& population){
 
 
 void selection_helix(int n, int m , int c, int p, bool red_player_first, vector<individual>& population, \\
-  vector<individual>& new_population, int news, int breeds, string fitness, int methodCross){
+  vector<individual>& new_population, int news, int breeds, string fitness, int quantInd_a_Cross){
 
   for (int i = 0; i < news; ++i){
     new_population.push_back(population[population.size()-1-i]);
@@ -45,7 +45,7 @@ void selection_helix(int n, int m , int c, int p, bool red_player_first, vector<
   get_better_ones(n, m , c, p, red_player_first, old_better_ones, old_population, fitness);
 
 
-  cross_breed(old_better_ones, better_ones, methodCross);
+  old_better_ones = crossover_twopops(old_better_ones, better_ones, quantInd_a_Cross);
 
   for (int i = 0; i < breeds; ++i){
     new_population.push_back(old_better_ones[i]);
@@ -55,7 +55,7 @@ void selection_helix(int n, int m , int c, int p, bool red_player_first, vector<
 
 
 void get_better_ones(int n, int m , int c, int p, bool red_player_first,        \\
-  vector<individual> better_ones, vector<individual> population, string fitness){
+  vector<individual>& better_ones, vector<individual>& population, string fitness){
 
   //first es score y second es indice del individuo en population
   vector<pair<int, unsigned int> > scores(population.size());
@@ -82,7 +82,7 @@ void get_better_ones(int n, int m , int c, int p, bool red_player_first,        
 
 //este método mezcla los individuos entre dos populations
 //puede hacerse otro método que se llame breed y mezcle los individuos de una sola population
-vector<individual> cross_breed(vector<individual> population_a, vector<individual> population_b, int method){
+vector<individual> crossover_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a){
 
   vector<individual> res;
 
@@ -90,23 +90,34 @@ vector<individual> cross_breed(vector<individual> population_a, vector<individua
   if(population_b < population_a) min_population = population_b;
 
   for (int i = 0; i < min_population; ++i){
-    res.push_back(breed(population_a[i], population_b[i], method);)
+    res.push_back(breed(population_a[i], population_b[i], quantInd_a);)
+  }
+
+  return res;
+}
+
+//toma quantInd_a de individual_a para el res, y el resto de _b
+//por ejemplo, quantInd_a = individual_a.size()/2 daría mitad de uno y otro
+//CUIDADO: toma ints, así que hacer ceil o floor
+individual breed(individual& individual_a, individual& individual_b, int quantInd_a){
+  individual res;
+  for (int i = 0; i < quantInd_a; ++i){
+    res.push_back(individual_a[i]);
+  }
+
+  for (int i = quantInd_a; i < population_b.size(); ++i){
+    res.push_back(individual_b[i]);
   }
 
   return res;
 }
 
 
-individual breed(individual individual_a, individual individual_b, int method){
-  
-}
-
-
-int fitness_himself(int n, int m , int c, int p, bool red_player_first, vector<individual> population){
+int fitness_himself(int n, int m , int c, int p, bool red_player_first, vector<individual>& population){
 
 }
 
-int fitness_others(int n, int m , int c, int p, bool red_player_first, vector<individual> population){
+int fitness_others(int n, int m , int c, int p, bool red_player_first, vector<individual>& population){
   
 }
 
