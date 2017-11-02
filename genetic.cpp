@@ -161,3 +161,39 @@ void save_population(vector<individual> population, int n, int m, int c, int p){
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem){
   return firstElem.first < secondElem.first;
 }
+
+// Le das un tablero y te genera el mejor jugador
+individual genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int benchmark, unsigned int max, unsigned int alpha){
+
+  // Genero la poblacion inicial
+  vector<individual> pop(pop_size,individual(ind_size));
+  pop = init_rnd_population(pop,max);
+
+  // Itero hasta superar mi benchmark
+  pair<int,unsigned int> best_ind = make_pair(0,0);
+  while(best_ind.first < benchmark){
+
+    // Calculo el mejor fitness de la poblacion y los ordeno
+    //Esto deberia ordenar la poblacion  de mejor a peor fitness
+    // y retorar el mejor score 
+    
+    best_ind.first = rank_population(pop);
+
+    best_ind.second = pop[0]; 
+
+    //Genero la nueva poblacion
+    new_generation(pop);
+
+  }
+
+  return best_ind.second;
+
+}
+
+int rank_population(vector<individual>& pop){
+  return 0;
+}
+
+void new_generation(vector<individual>& pop){
+  return pop;
+}

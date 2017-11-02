@@ -46,3 +46,9 @@ void mutation(vector<individual>& population, int prob, int max);
 
 //void save_population(vector<individual> population, int n, int m, int c, int p);
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem);
+
+
+// Cosas de Pato wip
+individual genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int benchmark, unsigned int max, unsigned int alpha);
+void new_generation(vector<individual>& pop);
+int rank_population(vector<individual>& pop);
