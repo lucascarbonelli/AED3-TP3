@@ -74,7 +74,6 @@ int scoreBoard(Board &b, int player, vector<int>& weights/*, ofstream& log*/){
   }
 
   /* Perfiles  */
-
   vector<int> opponent_profile = b.player_prof(OPPONENT);
   for (size_t i = 0; i < opponent_profile.size(); i++) {
     //log << "si el mueve a "<< i <<" "<< "puede hacer una linea de longitud "  << opponent_profile[i] << endl;
@@ -139,17 +138,15 @@ int main(int argc, const char* argv[]) {
 
     /* Guardamos un log de las decision en log.txt */
     ofstream log("log.txt");
-    ofstream res("res.txt");
     //log << iters << endl;
     int won = 0, lost = 0, tied = 0;
-    bool imBlue = false;
     vector<int> loosing_time;
     vector<int> winning_time;
 
     while (true) {
         int t = 0;
         color = read_str();
-        if(color == "azul") imBlue = true;
+        ofstream res(color+".txt");
         oponent_color = read_str();
 
         columns = read_int();
@@ -162,7 +159,6 @@ int main(int argc, const char* argv[]) {
         // Primer movimiento
         go_first = read_str();
         if (go_first == "vos"){
-          imBlue = true;
           log << "started \n" << endl;
           move = generateAndScore(board,PLAYER,c,weights);
           //log << "move \n" << move <<  endl;
@@ -192,17 +188,20 @@ int main(int argc, const char* argv[]) {
             //log << "move \n" << move <<  endl;
             board.addPlayer(move);
             send(move);
+            t++;
         }
         iters--;
-        if (iters == 0 && imBlue) {
+        if (iters == 0) {
           /* mediana del winning time */
           sort(winning_time.begin(), winning_time.end());
-          int mean_winning_time = won > 0 ? winning_time[won/2] : 0;
+          int mean_winning_time = won > 0 ? winning_time[won/2] : 1;
 
           sort(loosing_time.begin(),loosing_time.end());
-          int mean_loosing_time = lost > 0 ? loosing_time[lost/2] : 0;
+          int mean_loosing_time = lost > 0 ? loosing_time[lost/2] : 1;
 
-          res << won << endl << lost << endl << tied << endl;}
+          res << won << endl << lost << endl << tied << endl;
+          res << mean_winning_time << endl << mean_loosing_time << endl;
+        }
     }
 
 

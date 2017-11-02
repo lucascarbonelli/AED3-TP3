@@ -14,7 +14,7 @@ struct Solution{
 float fitness(vector<int> weights, int iter, int rows , int columns, int c, int p){
 
 	/* Seteamos parametros */
-	string cmd = "python c_linea.py --blue_player ./random_player --red_player ./parametric_player";
+	string cmd = "python c_linea.py --blue_player ./parametric_player ";
   cmd += " " + to_string(iter); /* cantidad de iteraciones */
   cmd += " " + to_string(weights.size()); /* cantidad de parametros */
 
@@ -22,23 +22,26 @@ float fitness(vector<int> weights, int iter, int rows , int columns, int c, int 
 	 	cmd += " " + to_string(weights[i]);
 	}
 
-  cmd += " --red_player ./parametric_player"
+  cmd += " --red_player ./random_player";
 	cmd += " --iterations " + to_string(iter);
 	cmd += " --first azul --columns "+to_string(columns)+" --rows "+to_string(rows)+" --p "+to_string(p)+" --c "+to_string(c)+" ";
 
 	/* Corremos el juego que dejara los resultados en res.txt*/
 	system(cmd.c_str());
-	ifstream res("res.txt");
-	int won,lost,tied, mean_l_time, mean_w_time;
+	ifstream res("azul.txt");
+	int won,lost,tied, median_l_time, median_w_time;
 	res >> won;
 	res >> lost;
 	res >> tied;
-  res >> mean_l_time;
-  res >> mean_w_time;
-	cout << "Ganados: "<< won << " | " << "Perdidos: " << lost << " | " << "Empatados: " << tied <<endl;
-  //cout << "Ratio:" << won/(iter)<< endl;;
+  res >> median_w_time;
+  res >> median_l_time;
+	//cout << "Ganados: "<< won << " | " << "Perdidos: " << lost << " | " << "Empatados: " << tied <<endl;
+  //cout << "median_w_time: " << median_w_time << " | " << "median_l_time: " << median_l_time << endl;
 
-  float score = won*10/mean_w_time - lost/mean_l_time;
+  float score = won/median_w_time - lost/median_l_time;
+  cout << "Score: " << score << endl;
+
+  return score;
 
 }
 
@@ -85,10 +88,10 @@ vector<int> gridSearch(int params, vector<int> range){
 /********************************************************************/
 /********************************************************************/
 
-int compareWeights(vector<int> weights1,vector<int> weights2, int iter, int rows , int columns, int c, int p){
+pair<float,float> match(vector<int> weights1,vector<int> weights2, int iter,int rows,int columns,int c, int p, int w1_first){
 
-	/* Seteamos parametros */
-	string cmd = "python c_linea.py --blue_player ./parametric_player";
+  /* Seteamos parametros */
+  string cmd = "python c_linea.py --blue_player ./parametric_player";
   /* pasamos weights 1 */
   cmd += " " + to_string(iter); /* cantidad de iteraciones */
   cmd += " " + to_string(weights1.size()); /* cantidad de parametros */
@@ -103,74 +106,81 @@ int compareWeights(vector<int> weights1,vector<int> weights2, int iter, int rows
   cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
 
   for (int i = 0; i < weights2.size(); ++i){
-	 	cmd += " " + to_string(weights2[i]);
-	}
+    cmd += " " + to_string(weights2[i]);
+  }
 
-	cmd += " --iterations " + to_string(iter);
-	cmd += " --first azul --columns "+to_string(columns)+" --rows "+to_string(rows)+" --p "+to_string(p)+" --c "+to_string(c)+" ";
+  cmd += " --iterations " + to_string(iter);
+  if(w1_first) {
+    cmd += " --first azul --columns "+to_string(columns)+" --rows "+to_string(rows)+" --p "+to_string(p)+" --c "+to_string(c)+" ";
+  } else {
+    cmd += " --first rojo --columns "+to_string(columns)+" --rows "+to_string(rows)+" --p "+to_string(p)+" --c "+to_string(c)+" ";
+  }
+
 
   system(cmd.c_str());
-  ifstream res("res.txt");
+
+  ifstream red_results("rojo.txt");
+  ifstream blue_results("azul.txt");
+
   int won,lost,tied, mean_l_time, mean_w_time;
   int total_won, avg_mean;
 
-  res >> won;
-  res >> lost;
-  res >> tied;
-  res >> mean_l_time;
-  res >> mean_w_time;
+  blue_results >> won;
+  blue_results >> lost;
+  blue_results >> tied;
+  blue_results >> mean_l_time;
+  blue_results >> mean_w_time;
 
-  float score = won*10/mean_w_time - lost/mean_l_time;
+  float score_w1 = won/mean_w_time - lost/mean_l_time;
 
+  red_results >> won;
+  red_results >> lost;
+  red_results >> tied;
+  red_results >> mean_l_time;
+  red_results >> mean_w_time;
 
-  /* ahora empieza el jugador con los pesos weights2 */
+  float score_w2 = won/mean_w_time - lost/mean_l_time;
 
-  /* Seteamos parametros */
-	string cmd = "python c_linea.py --blue_player ./parametric_player";
-  /* pasamos weights 1 */
-  cmd += " " + to_string(iter); /* cantidad de iteraciones */
-  cmd += " " + to_string(weights1.size()); /* cantidad de parametros */
-
-  for (int i = 0; i < weights1.size(); ++i){
-    cmd += " " + to_string(weights1[i]);
-  }
-
-  /* pasamos weights 2*/
-  cmd+= " --red_player ./parametric_player";
-  cmd += " " + to_string(iter); /* cantidad de iteraciones */
-  cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
-
-  for (int i = 0; i < weights2.size(); ++i){
-	 	cmd += " " + to_string(weights2[i]);
-	}
-
-	cmd += " --iterations " + to_string(iter);
-	cmd += " --first rojo --columns "+to_string(columns)+" --rows "+to_string(rows)+" --p "+to_string(p)+" --c "+to_string(c)+" ";
+  return make_pair(score_w1,score_w2);
 
 
-  res >> won;
-  res >> lost;
-  res >> tied;
-  res >> mean_l_time;
-  res >> mean_w_time;
-
-  bool better_than_random = (fitness(weights1,100)>=fitness(weights2,100));
-
-
-  float score += won*15/mean_w_time - lost/mean_l_time;
+}
 
 
 
 
-	/* Corremos el juego que dejara los resultados en res.txt*/
 
-	//cout << "Ganados: "<< won << " | " << "Perdidos: " << lost << " | " << "Empatados: " << tied <<endl;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+int compareWeights(vector<int> weights1,vector<int> weights2, int iter, int rows , int columns, int c, int p){
+
+  pair<float,float> scores1 = match(weights1, weights2, iter, rows , columns, c, p,true);
+  pair<float,float> scores2 = match(weights1, weights2, iter, rows , columns, c, p,false);
   /* veamos quien es el mejor */
-  //bool better_than_random = (fitness(weights1,100)>=fitness(weights2,100));
-  if(won + tied > lost  /*&&better_than_random*/) return 1;
-  return 0;
+  bool better_than_random = (fitness(weights1,100,rows,columns,c,p)>=fitness(weights2,100,rows,columns,c,p));
 
+  if(((scores1.first + scores2.first) > (scores1.second + scores2.second)) && better_than_random ) return 1;
+  return 0;
 }
 
 
@@ -183,6 +193,7 @@ vector<int> generateRandomWeights(int params,vector<int> range){
     int e = range[rand() % range.size()];
     weights.push_back(e);
   }
+  weights[0] = 0;
   weights[4] = 100;
   weights[params-1] = 1000000;
   return weights;
@@ -251,7 +262,7 @@ int main(){
   //weights[c-1] = 1000000;
   weights[c+columns] = 1000000;
 
-  //weights = randomSearch(c+columns+1,range,150,weights);
+  weights = randomSearch(c+columns+1,range,150,weights,rows,columns,c,p);
 
   cout << "Weights: " << endl;
   for (size_t i = 0; i < weights.size(); i++) {
@@ -259,7 +270,7 @@ int main(){
   }
   cout << endl;
 
-  int won = fitness(weights,1000,rows,columns,c,p);
+  float won = fitness(weights,1000,rows,columns,c,p);
 
 	return 0;
 
