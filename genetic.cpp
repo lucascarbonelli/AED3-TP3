@@ -1,10 +1,4 @@
-#include <stdlib.h>
-#include <utility>    //pair
-#include <algorithm>  //sort
-#include <vector>
-
-typedef vector<int> individual;
-
+#include "genetic.h"
 
 
 void init_rnd_population(vector<individual>& population, unsigned int max){
@@ -26,8 +20,7 @@ void init_population(vector<individual>& population){
 
 
 
-void selection_helix(int n, int m , int c, int p, bool red_player_first, vector<individual>& population, \\
-  vector<individual>& new_population, int news, int breeds, string fitness, int quantInd_a_Cross){
+void selection_helix(int n, int m , int c, int p, bool red_player_first, vector<individual>& population, vector<individual>& new_population, int news, int breeds, string fitness, int quantInd_a_Cross){
 
   for (int i = 0; i < news; ++i){
     new_population.push_back(population[population.size()-1-i]);
@@ -54,8 +47,7 @@ void selection_helix(int n, int m , int c, int p, bool red_player_first, vector<
 }
 
 
-void get_better_ones(int n, int m , int c, int p, bool red_player_first,        \\
-  vector<individual>& better_ones, vector<individual>& population, string fitness){
+void get_better_ones(int n, int m , int c, int p, bool red_player_first, vector<individual>& better_ones, vector<individual>& population, string fitness){
 
   //first es score y second es indice del individuo en population
   vector<pair<int, unsigned int> > scores(population.size());
@@ -87,10 +79,10 @@ vector<individual> crossover_twopops(vector<individual>& population_a, vector<in
   vector<individual> res;
 
   int min_population = population_a.size();
-  if(population_b < population_a) min_population = population_b;
+  if(population_b < population_a) min_population = population_b.size();
 
   for (int i = 0; i < min_population; ++i){
-    res.push_back(breed(population_a[i], population_b[i], quantInd_a);)
+    res.push_back(breed(population_a[i], population_b[i], quantInd_a));
   }
 
   return res;
@@ -105,7 +97,7 @@ individual breed(individual& individual_a, individual& individual_b, int quantIn
     res.push_back(individual_a[i]);
   }
 
-  for (int i = quantInd_a; i < population_b.size(); ++i){
+  for (int i = quantInd_a; i < individual_b.size(); ++i){
     res.push_back(individual_b[i]);
   }
 
@@ -113,16 +105,16 @@ individual breed(individual& individual_a, individual& individual_b, int quantIn
 }
 
 
-int fitness_himself(int n, int m , int c, int p, bool red_player_first, vector<individual>& population){
-
+int fitness_himself(int n, int m , int c, int p, bool red_player_first, individual& population){
+  return 0;
 }
 
-int fitness_others(int n, int m , int c, int p, bool red_player_first, vector<individual>& population){
-  
+int fitness_others(int n, int m , int c, int p, bool red_player_first, individual& population){
+  return 0; 
 }
 
 /*---------------------------------------Auxiliares------------------------------------------*/
-
+/*
 
 //Formato de salida:
 //               T·.·_C·_P·/_I·_F·
@@ -136,15 +128,15 @@ void save_population(vector<individual> population, int n, int m, int c, int p){
 
   string finalpath = "T" + to_string(n)+"."+to_string(m)+"_C"+to_string(c)+"_P"+to_string(p);
   if (mkdir(finalpath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1){
-    /*if( errno == EEXIST ){
     //está parte de abajo quizá sea útil...
+    /*if( errno == EEXIST ){
         //alredy exists
     } else {
         //something else
         std::cout << "cannot create sessionnamefolder error:" << strerror(errno) << std::endl;
         throw std::runtime_exception( strerror(errno) );
       }
-    }*/
+    }//
   }
 
   string f_name = "training/"+finalpath+"/"+"_I"+to_string(population.size())+"_F"+to_string(population[0].size());
@@ -158,7 +150,7 @@ void save_population(vector<individual> population, int n, int m, int c, int p){
   }
 }
 
-
+*/
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem){
   return firstElem.first < secondElem.first;
 }
