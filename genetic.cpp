@@ -104,17 +104,34 @@ individual breed(individual& individual_a, individual& individual_b, int quantIn
   return res;
 }
 
-
+//se calcula fitness contra otras versiones de si mismo
 int fitness_himself(int n, int m , int c, int p, bool red_player_first, individual& population){
   return 0;
 }
 
+//se calcula fitness contra otros tipos de jugador
 int fitness_others(int n, int m , int c, int p, bool red_player_first, individual& population){
   return 0; 
 }
 
+
+//con una probabilidad 1/prob elegimos un indice al azar y modificamos con un valor al azar entre 0 y max-1
+//RECOMENDADO: valores muy grandes para prob
+void mutation(vector<individual>& population, int prob, int max){
+  for (int i = 0; i < population.size(); ++i){
+    //cada individuo tiene 1/prob de chances de mutar amount de sus caracteristicas
+    unsigned int amount = rand() % population[i].size();
+    for (int j = 0; j < amount; ++j){
+      if (rand() % prob == 0){
+        unsigned int index = rand() % population[i].size();
+        population[i][index] = rand() % max;
+      }
+    }
+  }
+}
+
 /*---------------------------------------Auxiliares------------------------------------------*/
-/*
+
 
 //Formato de salida:
 //               T·.·_C·_P·/_I·_F·
@@ -136,7 +153,7 @@ void save_population(vector<individual> population, int n, int m, int c, int p){
         std::cout << "cannot create sessionnamefolder error:" << strerror(errno) << std::endl;
         throw std::runtime_exception( strerror(errno) );
       }
-    }//
+    }*/
   }
 
   string f_name = "training/"+finalpath+"/"+"_I"+to_string(population.size())+"_F"+to_string(population[0].size());
@@ -150,7 +167,7 @@ void save_population(vector<individual> population, int n, int m, int c, int p){
   }
 }
 
-*/
+
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem){
   return firstElem.first < secondElem.first;
 }

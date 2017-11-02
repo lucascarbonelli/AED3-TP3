@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <utility>    //pair
 #include <algorithm>  //sort
@@ -19,8 +20,9 @@ vector<individual> crossover_twopops(vector<individual>& population_a, vector<in
 individual breed(individual& individual_a, individual& individual_b, int quantInd_a);
 int fitness_himself(int n, int m , int c, int p, bool red_player_first, individual& population);
 int fitness_others(int n, int m , int c, int p, bool red_player_first, individual& population);
+void mutation(vector<individual>& population, int prob);
 
 //Auxiliares
 
-//void save_population(vector<individual> population, int n, int m, int c, int p);
+void save_population(vector<individual> population, int n, int m, int c, int p);
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem);
