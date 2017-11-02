@@ -1,0 +1,8 @@
+Ej2:
+
+
+
+Ej3:
+variar tecnicas de crossover, variar probabilidad de mutación
+(fitness) jugar primero contra grid y despues ver como le va contra minimax, y vicebersa
+(genetica) partir de poblaciones random, malas y buenas, contra un mismo jugador, para ver cual evoluciona mejor
