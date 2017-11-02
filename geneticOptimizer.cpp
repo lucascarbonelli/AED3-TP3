@@ -51,46 +51,36 @@ int geneticGeneration(int n, int m , int c, int p, bool red_player_first, vector
 
 int main() {
 
-    //std::default_random_engine generator;
-    std::string msg, color, oponent_color, go_first;
-    int columns, rows, c, p, move;
+  int c = 4;
+  int columns = 7;
+  int rows = 6;
+  int p = 21;
 
-    while (true) {
-        color = read_str();
-        oponent_color = read_str();
+  vector<int> weights(c+columns+1,0);
+  /*
+  for (int i = 0; i < c; i++) {
+    weights[i] = i;
+  }
+  for (int i = c ; i < c + columns; i++) {
+    weights[i] = -5*i;
+  }*/
+  weights = {0, 4, -1, 1, 3, -4, 1, 2, -1, -3, 1, 5};
+  weights = {-1, 1, 4, 15, 100, -4, 3, -4, 3, -2, 2, 100};
+  vector<int> range{-15,-10,-5,-4,-3,-2,-1,0,1,2,3,4,5,10,15};
 
-        columns = read_int();
-        rows = read_int();
-        c = read_int();
-        p = read_int();
+  /* fijamos algunas */
+  //weights[c-1] = 1000000;
+  weights[c+columns] = 1000000;
 
-        std::uniform_int_distribution<int> do_move(0, columns - 1);
-        std::vector<int> board(columns);
+  weights = randomSearch(c+columns+1,range,150,weights,rows,columns,c,p);
 
-        for(int i=0; i<columns; ++i) board[i] = 0;
+  cout << "Weights: " << endl;
+  for (size_t i = 0; i < weights.size(); i++) {
+    cout << weights[i] << " ";
+  }
+  cout << endl;
 
-        go_first = read_str();
-        if (go_first == "vos") {
-            move = do_move(generator);
-            board[move]++;
-            send(move);
-        }
-
-        while (true) {
-            msg = read_str();
-            if (msg == "ganaste" || msg == "perdiste" || msg == "empataron") {
-                break;
-            }
-
-            board[std::stoi(msg)]++;
-            do {
-                move = do_move(generator);
-            } while(board[move] >= rows);
-            
-            board[move]++;
-            send(move);
-        }
-    }
+  float won = fitness(weights,1000,rows,columns,c,p);
 
     return 0;
 }

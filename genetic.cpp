@@ -20,50 +20,47 @@ void init_population(vector<individual>& population){
 
 
 
-void selection_helix(int n, int m , int c, int p, bool red_player_first, vector<individual>& population, vector<individual>& new_population, int news, int breeds, string fitness, int iter, int quantInd_a_Cross, int probMut, int maxMut){
+void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params){
 
-  for (int i = 0; i < news; ++i){
+  for (int i = 0; i < params.news; ++i){
     new_population.push_back(population[population.size()-1-i]);
   }
 
-  vector<individual> better_ones(breeds);
-  get_better_ones(n, m , c, p, red_player_first, iter, better_ones, population, fitness);
+  vector<individual> better_ones(params.breeds);
+  get_better_ones(board, better_ones, population, params.fitness, params.iter);
 
   vector<individual> old_population;
-  for (int i = 0; i < population.size()-news; ++i){
+  for (int i = 0; i < population.size()-params.news; ++i){
     old_population.push_back(population[i]);
   }
 
-  vector<individual> old_better_ones(breeds);
-  get_better_ones(n, m , c, p, red_player_first, iter, old_better_ones, old_population, fitness);
+  vector<individual> old_better_ones(params.breeds);
+  get_better_ones(board, old_better_ones, old_population, params.fitness, params.iter);
 
 
-  old_better_ones = crossover_twopops(old_better_ones, better_ones, quantInd_a_Cross);
+  old_better_ones = crossover_twopops(old_better_ones, better_ones, params.quantInd_a_Cross);
 
-  for (int i = 0; i < breeds; ++i){
+  for (int i = 0; i < params.breeds; ++i){
     new_population.push_back(old_better_ones[i]);
   }
 
-  mutation(new_population, probMut, maxMut);
+  mutation(new_population, params.probMut, params.maxMut);
 
   //save_population(new_population, n, m, c, p);
 
 }
 
 //copia a better_ones los better_ones.size() mejores según fitness (notar que hay que pasar vector inicializado con tamaño)
-void get_better_ones(int n, int m , int c, int p, bool red_player_first, int iter, vector<individual>& better_ones, vector<individual>& population, string fitness){
+void get_better_ones(matchBoard board, vector<individual>& better_ones, vector<individual>& population, string fitness, int iter){
 
   //first es score y second es indice del individuo en population
   vector<pair<int, unsigned int> > scores(population.size());
+  if(fitness == "population"){
+  	scores = fitness_population(board, population);
+	}
 
-  for (int i = 0; i < population.size(); ++i){
-    if(fitness == "himself"){
-      scores[i].first = fitness_himself(n, m , c, p, red_player_first, population[i], iter);
-    }
-    if(fitness == "others"){
-      scores[i].first = fitness_others(n, m , c, p, red_player_first, population[i], iter);
-    }
-    scores[i].second = i;
+	if(fitness == "others"){
+    scores = fitness_others(board, population, iter);
   }
 
   //lo ordeno con pairCompare
@@ -107,74 +104,14 @@ individual breed(individual& individual_a, individual& individual_b, int quantIn
   return res;
 }
 
-//se calcula fitness contra otras versiones de si mismo
-int fitness_himself(int n, int m , int c, int p, bool red_player_first, individual& individual_a, int iter){
-    /* Seteamos parametros */
-  string cmd = "python c_linea.py --blue_player ./genetic_player --red_player ./parametric_player";
-  cmd += " " + to_string(iter); /* cantidad de iteraciones */
-  cmd += " " + to_string(individual_a.size()); /* cantidad de parametros */
-
-  for (int i = 0; i < individual_a.size(); ++i){
-    cmd += " " + to_string(individual_a[i]);
-  }
-
-  cmd += " --red_player ./parametric_player";
-  cmd += " --iterations " + to_string(iter);
-  cmd += " --first azul --columns "+to_string(m)+" --rows "+to_string(n)+" --p "+to_string(p)+" --c "+to_string(c)+" ";
-
-  /* Corremos el juego que dejara los resultados en res.txt*/
-  system(cmd.c_str());
-  ifstream res("res.txt");
-  int won,lost,tied, mean_l_time, mean_w_time;
-  res >> won;
-  res >> lost;
-  res >> tied;
-  res >> mean_l_time;
-  res >> mean_w_time;
-  cout << "Ganados: "<< won << " | " << "Perdidos: " << lost << " | " << "Empatados: " << tied <<endl;
-  //cout << "Ratio:" << won/(iter)<< endl;;
-
-  float score = won*10/mean_w_time - lost/mean_l_time;
-}
-
-//se calcula fitness contra otros tipos de jugador
-int fitness_others(int n, int m , int c, int p, bool red_player_first, individual& individual_a, int iter){
-    /* Seteamos parametros */
-  string cmd = "python c_linea.py --blue_player ./minimax --red_player ./parametric_player";
-  cmd += " " + to_string(iter); /* cantidad de iteraciones */
-  cmd += " " + to_string(individual_a.size()); /* cantidad de parametros */
-
-  for (int i = 0; i < individual_a.size(); ++i){
-    cmd += " " + to_string(individual_a[i]);
-  }
-
-  cmd += " --red_player ./parametric_player";
-  cmd += " --iterations " + to_string(iter);
-  cmd += " --first azul --columns "+to_string(m)+" --rows "+to_string(n)+" --p "+to_string(p)+" --c "+to_string(c)+" ";
-
-  /* Corremos el juego que dejara los resultados en res.txt*/
-  system(cmd.c_str());
-  ifstream res("res.txt");
-  int won,lost,tied, mean_l_time, mean_w_time;
-  res >> won;
-  res >> lost;
-  res >> tied;
-  res >> mean_l_time;
-  res >> mean_w_time;
-  cout << "Ganados: "<< won << " | " << "Perdidos: " << lost << " | " << "Empatados: " << tied <<endl;
-  //cout << "Ratio:" << won/(iter)<< endl;;
-
-  float score = won*10/mean_w_time - lost/mean_l_time;
-}
 
 
 //con una probabilidad 1/prob elegimos un indice al azar y modificamos con un valor al azar entre 0 y max-1
 //RECOMENDADO: valores muy grandes para prob
 void mutation(vector<individual>& population, int prob, int max){
   for (int i = 0; i < population.size(); ++i){
-    //cada individuo tiene 1/prob de chances de mutar amount de sus caracteristicas
-    unsigned int amount = rand() % population[i].size();
-    for (int j = 0; j < amount; ++j){
+    //cada individuo tiene 1/prob de chances de mutar de sus caracteristicas
+    for (int j = 0; j < population[i].size(); ++j){
       if (rand() % prob == 0){
         unsigned int index = rand() % population[i].size();
         population[i][index] = rand() % max;
