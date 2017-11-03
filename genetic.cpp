@@ -1,17 +1,110 @@
 #include "genetic.h"
 
 
+/******************************************************************************/
+/******************************************************************************/
+
+pair<float,float> match(vector<int> weights1,vector<int> weights2, int iter, matchBoard& board){
+
+  /* Seteamos parametros */
+  string cmd = "python c_linea.py --blue_player ./parametric_player";
+  /* pasamos weights 1 */
+  cmd += " " + to_string(iter); /* cantidad de iteraciones */
+  cmd += " " + to_string(weights1.size()); /* cantidad de parametros */
+
+  for (int i = 0; i < weights1.size(); ++i){
+    cmd += " " + to_string(weights1[i]);
+  }
+
+  /* pasamos weights 2*/
+  cmd+= " --red_player ./parametric_player";
+  cmd += " " + to_string(iter); /* cantidad de iteraciones */
+  cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
+
+  for (int i = 0; i < weights2.size(); ++i){
+    cmd += " " + to_string(weights2[i]);
+  }
+
+  cmd += " --iterations " + to_string(iter);
+  if(w1_first) {
+    cmd += " --first azul --columns "+to_string(board.m)+" --rows "+to_string(board.n)+" --p "+to_string(board.p)+" --c "+to_string(board.c)+" ";
+  } else {
+    cmd += " --first rojo --columns "+to_string(board.m)+" --rows "+to_string(board.n)+" --p "+to_string(board.p)+" --c "+to_string(board.c)+" ";
+  }
+
+
+  system(cmd.c_str());
+  ifstream red_results("rojo.txt");
+  ifstream blue_results("azul.txt");
+
+  int won,lost,tied, mean_l_time, mean_w_time;
+  int total_won, avg_mean;
+
+  blue_results >> won;
+  blue_results >> lost;
+  blue_results >> tied;
+  blue_results >> mean_l_time;
+  blue_results >> mean_w_time;
+
+  float score_w1 = won/mean_w_time - lost/mean_l_time;
+
+  red_results >> won;
+  red_results >> lost;
+  red_results >> tied;
+  red_results >> mean_l_time;
+  red_results >> mean_w_time;
+
+  float score_w2 = won/mean_w_time - lost/mean_l_time;
+  return make_pair(score_w1,score_w2);
+}
+
+
+/******************************************************************************/
+/******************************************************************************/
+
+
+
+vector<pair<int,unsigned int> > tournament(vector<individual> population, matchBoard& board){
+  // vector de pares que representan < num_inidividio , score_total >
+
+  int NUM_MATCHES = 3; // Numero de partidas que juegan 2 individos
+
+  vector<pair<int,unsigned int> > results(make_pair(0,0));
+  for (size_t i = 0; i < population.size(); i++) {
+    results[i] = i;
+    for (size_t j = 0; j < population.size(); j++) {
+      if(i != j){
+        pair<float,float> result = match(population[i],population[j],NUM_MATCHES,board);
+        results[i].second += (int) result.first;
+        results[j].second += (int) result.second;
+      }
+    }
+  }
+  return results;
+}
+
 void init_rnd_population(vector<individual>& population, unsigned int max){
   unsigned int size = population.size();
   unsigned int num_features = population[0].size();
 
   for (size_t i = 0; i < size; i++) {
     for (size_t j = 0; j < num_features; j++) {
-      population[i][j] = rand() % max;
+      population[i][j] = rand() % max;hile(best_ind.first < benchmark){
+
+    // Calculo el mejor fitness de la poblacion y los ordeno
+    //Esto deberia ordenar la poblacion  de mejor a peor fitness
+    // y retorar el mejor score
+
+    best_ind.first = rank_population(pop);
+
+    best_ind.second = pop[0];
+
     }
   }
 
+  }
 }
+
 
 void init_population(vector<individual>& population){
 
@@ -104,6 +197,15 @@ individual breed(individual& individual_a, individual& individual_b, int quantIn
   return res;
 }
 
+hile(best_ind.first < benchmark){
+
+    // Calculo el mejor fitness de la poblacion y los ordeno
+    //Esto deberia ordenar la poblacion  de mejor a peor fitness
+    // y retorar el mejor score
+
+    best_ind.first = rank_population(pop);
+
+    best_ind.second = pop[0];
 
 
 //con una probabilidad 1/prob elegimos un indice al azar y modificamos con un valor al azar entre 0 y max-1
@@ -175,11 +277,11 @@ individual genetic_optimization(matchBoard board, unsigned int pop_size, unsigne
 
     // Calculo el mejor fitness de la poblacion y los ordeno
     //Esto deberia ordenar la poblacion  de mejor a peor fitness
-    // y retorar el mejor score 
-    
+    // y retorar el mejor score
+
     best_ind.first = rank_population(pop);
 
-    best_ind.second = pop[0]; 
+    best_ind.second = pop[0];
 
     //Genero la nueva poblacion
     new_generation(pop);
