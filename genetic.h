@@ -4,6 +4,7 @@
 #include <utility>    //pair
 #include <algorithm>  //sort
 #include <math.h> 	  //floor
+#include <stdlib.h>   //system
 #include <string>
 #include <vector>
 
@@ -49,7 +50,7 @@ vector<pair<matchResults,matchResults> > tournament(matchBoard board, vector<ind
 pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2, int p1i, int p2i, int iter, matchBoard& board);
 
 //Helix
-void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params);
+void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log);
 vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual> fittest, vector<individual>& population, int iter);
 void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores);
 int score_helix(matchResults match);

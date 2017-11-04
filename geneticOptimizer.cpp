@@ -44,6 +44,7 @@ std::string read_str() {
 
 int main(int argc, const char* argv[]) {
 
+  ofstream log("log_gen_helix.txt");
 
 
   vector<individual>  population(20);
@@ -72,7 +73,8 @@ int main(int argc, const char* argv[]) {
 
   while(new_population.size() > 2){
     //corro la genetica
-    helix(board, population, new_population, params);
+    log << "con población: " << population.size() << endl;
+    helix(board, population, new_population, params, log);
 
     //population es new population, y new population se vacía y achica
     population.clear();
@@ -82,13 +84,19 @@ int main(int argc, const char* argv[]) {
     params.breeds = porcentage(population.size(), 20);
     new_population.resize(params.news+params.breeds);
 
+    log << "actualize todo" << endl;
+
     //actualizo los mejores globales
     vector<individual> all_individuals = population;
     all_individuals.push_back(best_ones[0]);
     all_individuals.push_back(best_ones[1]);
     all_individuals.push_back(best_ones[2]);
 
+    log << "forme all individuals" << endl;
+
     get_fittest_helix(board, best_ones, all_individuals, 10);   
+
+    log << "termine está iteración" << endl;
   }
 
   return 0;

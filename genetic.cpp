@@ -123,7 +123,7 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 /*---------------------------------------Selection y fitness Helix------------------------------------------*/
 
 
-void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params){
+void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log){
   //tomamos #breeds better ones
   vector<individual> better_ones(params.breeds);
   get_fittest_helix(board, better_ones, population, params.iter);
