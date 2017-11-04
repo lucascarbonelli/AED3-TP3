@@ -30,8 +30,9 @@ vector<pair<int,unsigned int> > tournament(vector<individual> population, matchB
   }
   return results;
 }
-
 */
+
+
 void init_rnd_population(vector<individual>& population, unsigned int max){
   unsigned int size = population.size();
   unsigned int num_features = population[0].size();
@@ -114,15 +115,17 @@ vector<pair<int, unsigned int> > get_fittest(matchBoard board, vector<individual
 
 vector<pair<matchResults,matchResults> > fitness_population(matchBoard board, vector<pait<int, unsigned int> >& scores, vector<individual>& population, string player1, string player2, int iter){
 
-  vector<pair<matchResults,matchResults> > fixture;
+  vector<pair<pair<matchResults,matchResults>, individual > > fixture;
   for (int i = 0; i < population.size(); ++i){
     //si es minimax_player, minimax no necesita weights2
     if(player2 != "minimax_player"){
       for (int j = i+1; j < population.size(); ++j){
-        fixture.push_back(match(population[i], population[j], player1, player2, iter, board));
+        vector<pair<matchResults,matchResults> > match = match(population[i], population[j], player1, player2, iter, board);
+        fixture.push_back(make_pair(match, population[i]));
+        fixture.push_back(make_pair(match, population[j]));
       }
     } else {
-      fixture.push_back(match(population[i], population[j], player1, player2, iter, board));
+      fixture.push_back(make_pair(match(population[i], population[j], player1, player2, iter, board), population[i]));
     }
   }
 
@@ -208,10 +211,12 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
   /* pasamos weights 2*/
   cmd+= " --red_player ./" + player2;
   cmd += " " + to_string(iter); /* cantidad de iteraciones */
-  cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
-
-  for (int i = 0; i < weights2.size(); ++i){
-    cmd += " " + to_string(weights2[i]);
+  if(player2 != "minimax_player"){
+    cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
+  
+    for (int i = 0; i < weights2.size(); ++i){
+      cmd += " " + to_string(weights2[i]);
+    }
   }
 
   cmd += " --iterations " + to_string(iter);
@@ -249,8 +254,8 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 
 
 /*---------------------------------------Auxiliares------------------------------------------*/
-/*
 
+/*
 //Formato de salida:
 //               T·.·_C·_P·/_I·_F·
 //Donde en cada punto hay un numero, y la barra es por directorio, y las siglas son:

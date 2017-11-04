@@ -44,7 +44,7 @@ void init_population(vector<individual>& population);
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params);
 
 vector<pair<int, unsigned int> > get_fittest(matchBoard board, vector<individual>& fittest, vector<individual>& population, string player1, string player2, int iter);
-void fitness_population(matchBoard board, vector<pait<int, unsigned int> >& scores, vector<individual>& population, string player1, string player2, int iter);
+vector<pair<matchResults,matchResults> > fitness_population(matchBoard board, vector<pait<int, unsigned int> >& scores, vector<individual>& population, string player1, string player2, int iter);
 vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a);
 individual crossover(individual& individual_a, individual& individual_b, int quantInd_a);
 void mutation(vector<individual>& population, int prob, int max);
