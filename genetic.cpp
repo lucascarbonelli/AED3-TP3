@@ -1,57 +1,13 @@
 #include "genetic.h"
 
 
-/******************************************************************************/
-/******************************************************************************/
-
-
-
-
-/******************************************************************************/
-/******************************************************************************/
-
-
-/*
-vector<pair<int,unsigned int> > tournament(vector<individual> population, matchBoard& board){
-  // vector de pares que representan < num_inidividio , score_total >
-
-  int NUM_MATCHES = 3; // Numero de partidas que juegan 2 individos
-
-  vector<pair<int,unsigned int> > results(make_pair(0,0));
-  for (size_t i = 0; i < population.size(); i++) {
-    results[i] = i;
-    for (size_t j = 0; j < population.size(); j++) {
-      if(i != j){
-        pair<float,float> result = match(population[i],population[j],NUM_MATCHES,board);
-        results[i].second += (int) result.first;
-        results[j].second += (int) result.second;
-      }
-    }
-  }
-  return results;
-}
-*/
-
-
 void init_rnd_population(vector<individual>& population, unsigned int max){
   unsigned int size = population.size();
-  unsigned int num_features = population[0].size();
 
   for (size_t i = 0; i < size; i++) {
-    for (size_t j = 0; j < num_features; j++) {
-      population[i][j] = rand() % max;hile(best_ind.first < benchmark){
-
-    // Calculo el mejor fitness de la poblacion y los ordeno
-    //Esto deberia ordenar la poblacion  de mejor a peor fitness
-    // y retorar el mejor score
-
-    best_ind.first = rank_population(pop);
-
-    best_ind.second = pop[0];
-
+    for (size_t j = 0; j < population[0].size(); j++) {
+      population[i][j] = rand() % max;
     }
-  }
-
   }
 }
 
@@ -61,94 +17,6 @@ void init_population(vector<individual>& population){
 //para hacer un init mas inteligente sobre "los mejores" o "los peores"
 }
 
-
-
-void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params){
-
-  vector<individual> better_ones(params.crossovers);
-  get_fittest(board, better_ones, population, params.fitness, params.iter);
-
-  vector<individual> old_population;
-  for (int i = 0; i < population.size()-params.news; ++i){
-    old_population.push_back(population[i]);
-  }
-  vector<individual> old_better_ones(params.crossovers);
-  get_fittest(board, old_better_ones, old_population, params.fitness, params.iter);
-
-  old_better_ones = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross);
-
-
-  for (int i = 0; i < params.news; ++i){
-    new_population.push_back(population[population.size()-1-i]);
-  }
-  for (int i = 0; i < params.crossovers; ++i){
-    new_population.push_back(old_better_ones[i]);
-  }
-
-  mutation(new_population, params.probMut, params.maxMut);
-
-  //save_population(new_population, n, m, c, p);
-
-}
-
-//copia a fittest los fittest.size() mejores según fitness (notar que hay que pasar vector inicializado con tamaño)
-vector<pair<int, unsigned int> > get_fittest(matchBoard board, vector<individual>& fittest, vector<individual>& population, string player1, string player2, int iter){
-
-  //first es score y second es indice del individuo en population
-  vector<pair<int, unsigned int> > scores(population.size());
-
-  //rankeamos a cada individuo
-  fitness_population(board, scores, population, player1, player2, iter);
-
-  //los ordeno con pairCompare
-  sort(scores.begin(), scores.end(), pairCompare);
-
-  //meto todo en fittest
-  for (int i = 0; i < fittest.size(); ++i){
-    fittest[i] = population[scores[population.size()-1-i].second];
-  }
-
-  //devuelvo los scores con su indice en population (si se toma el indice de scores, se ignora scores.second, matchea con fittest)
-  return scores;
-}
-
-
-vector<pair<matchResults,matchResults> > fitness_population(matchBoard board, vector<pait<int, unsigned int> >& scores, vector<individual>& population, string player1, string player2, int iter){
-
-  vector<pair<pair<matchResults,matchResults>, individual > > fixture;
-  for (int i = 0; i < population.size(); ++i){
-    //si es minimax_player, minimax no necesita weights2
-    if(player2 != "minimax_player"){
-      for (int j = i+1; j < population.size(); ++j){
-        vector<pair<matchResults,matchResults> > match = match(population[i], population[j], player1, player2, iter, board);
-        fixture.push_back(make_pair(match, population[i]));
-        fixture.push_back(make_pair(match, population[j]));
-      }
-    } else {
-      fixture.push_back(make_pair(match(population[i], population[j], player1, player2, iter, board), population[i]));
-    }
-  }
-
-  return fixture;
-}
-
-
-
-//este método mezcla los individuos entre dos populations
-//puede hacerse otro método que se llame crossover y mezcle los individuos de una sola population
-vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a){
-
-  vector<individual> res;
-
-  int min_population = population_a.size();
-  if(population_b < population_a) min_population = population_b.size();
-
-  for (int i = 0; i < min_population; ++i){
-    res.push_back(crossover(population_a[i], population_b[i], quantInd_a));
-  }
-
-  return res;
-}
 
 //toma quantInd_a de individual_a para el res, y el resto de _b
 //por ejemplo, quantInd_a = individual_a.size()/2 daría mitad de uno y otro
@@ -166,17 +34,6 @@ individual crossover(individual& individual_a, individual& individual_b, int qua
   return res;
 }
 
-/*
-hile(best_ind.first < benchmark){
-
-    // Calculo el mejor fitness de la poblacion y los ordeno
-    //Esto deberia ordenar la poblacion  de mejor a peor fitness
-    // y retorar el mejor score
-
-    best_ind.first = rank_population(pop);
-
-    best_ind.second = pop[0];
-*/
 
 //con una probabilidad 1/prob elegimos un indice al azar y modificamos con un valor al azar entre 0 y max-1
 //RECOMENDADO: valores muy grandes para prob
@@ -193,10 +50,27 @@ void mutation(vector<individual>& population, int prob, int max){
 }
 
 
+//según el enunciado, no es recomendado hacer jugar con minimax_player, tarda mucho
+vector<pair<matchResults,matchResults> > tournament(matchBoard board, vector<individual>& population, string player1, string player2, int iter){
 
+  //en matchResults tenemos qué weight fué
+  vector<pair<matchResults,matchResults> > fixture;
+  for (int i = 0; i < population.size(); ++i){
+    //si es minimax_player, minimax no necesita weights2
+    if(player2 != "minimax_player"){
+      for (int j = i+1; j < population.size(); ++j){
+        fixture.push_back(match(population[i], population[j], i, j, player1, player2, iter, board));
+      }
+    } else {
+      fixture.push_back(match(population[i], population[i], i, i, player1, player2, iter, board));
+    }
+  }
+
+  return fixture;
+}
 
 //En player1 o player2 pasar: parametric_player, minimax_player, etc...
-pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2, string player1, string player2, int iter, matchBoard& board){
+pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2, int p1i, int p2i, string player1, string player2, int iter, matchBoard& board){
 
   /* Seteamos parametros */
   string cmd = "python c_linea.py --blue_player ./" + player1;
@@ -210,7 +84,7 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 
   /* pasamos weights 2*/
   cmd+= " --red_player ./" + player2;
-  cmd += " " + to_string(iter); /* cantidad de iteraciones */
+  //cmd += " " + to_string(iter); /* cantidad de iteraciones */
   if(player2 != "minimax_player"){
     cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
   
@@ -238,6 +112,8 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
   blue_results >> blue.tied;
   blue_results >> blue.median_w_time;
   blue_results >> blue.median_l_time;
+  blue.weights = weights1;
+  blue.indexPop = p1i;
 
   float score_w1 = won/mean_w_time - lost/mean_l_time;
 
@@ -246,10 +122,138 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
   red_results >> red.tied;
   red_results >> red.median_w_time;
   red_results >> red.median_l_time;
+  red.weights = weights2;
+  red.indexPop = p2i;
 
   return make_pair(blue,red);
 }
 
+
+
+//Selection y fitness Helix
+
+void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params){
+
+  vector<individual> better_ones(params.breeds);
+  get_fittest_helix(board, better_ones, population, params.player1, params.player2, params.fitness, params.iter);
+
+  vector<individual> old_population;
+  for (int i = 0; i < population.size()-params.news; ++i){
+    old_population.push_back(population[i]);
+  }
+  vector<individual> old_better_ones(params.breeds);
+  get_fittest_helix(board, old_better_ones, old_population, params.player1, params.player2, params.fitness, params.iter);
+
+  old_better_ones = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross);
+
+
+  for (int i = 0; i < params.news; ++i){
+    new_population.push_back(population[population.size()-1-i]);
+  }
+  for (int i = 0; i < params.breeds; ++i){
+    new_population.push_back(old_better_ones[i]);
+  }
+
+  mutation(new_population, params.probMut, params.maxMut);
+
+  //save_population(new_population, n, m, c, p);
+
+}
+
+
+vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual> fittest, vector<individual>& population, string player1, string player2, int iter){
+
+  //first es score y second es indice del individuo en population
+  vector<pair<int, unsigned int> > scores(population.size());
+
+  //rankeamos a cada individuo
+  fitness_population_helix(tournament(board, population, player1, player2, iter), scores);
+
+  //los ordeno con pairCompare
+  sort(scores.begin(), scores.end(), pairCompare);
+
+  //meto todo en fittest
+  for (int i = 0; i < fittest.size(); ++i){
+    fittest[i] = population[scores[population.size()-1-i].second];
+  }
+
+  //devuelvo los scores con su indice en population (si se toma el indice de scores, se ignora scores.second, matchea con fittest)
+  return scores;
+}
+
+
+void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores){
+
+    for (int i = 0; i < tournament_results.size(); ++i){
+      scores[tournament_results[i].first.indexPop].first = scores[tournament_results[i].first.indexPop].first + score_helix(tournament_results[i].first);
+      scores[tournament_results[i].first.indexPop].second = tournament_results[i].first.indexPop;
+      scores[tournament_results[i].second.indexPop].first = scores[tournament_results[i].second.indexPop].first + score_helix(tournament_results[i].second);
+      scores[tournament_results[i].second.indexPop].second = tournament_results[i].second.indexPop;
+    }
+}
+
+int score_helix(matchResults match){
+  return (match.won - match.lost + match.tied/2) + (match.median_w_time - match.median_l_time)*2;
+}
+
+
+//este método mezcla los individuos entre dos populations
+//puede hacerse otro método que se llame crossover y mezcle los individuos de una sola population
+vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a){
+
+  vector<individual> res;
+
+  int min_population = population_a.size();
+  if(population_b < population_a) min_population = population_b.size();
+
+  for (int i = 0; i < min_population; ++i){
+    res.push_back(crossover(population_a[i], population_b[i], quantInd_a));
+  }
+
+  return res;
+}
+
+
+
+//Selection y Fitness Paté
+/*
+// Le das un tablero y te genera el mejor jugador
+individual genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int benchmark, unsigned int max, unsigned int alpha){
+
+  // Genero la poblacion inicial
+  vector<individual> pop(pop_size,individual(ind_size));
+  pop = init_rnd_population(pop,max);
+
+  // Itero hasta superar mi benchmark
+  pair<int,unsigned int> best_ind = make_pair(0,0);
+  while(best_ind.first < benchmark){
+
+    // Calculo el mejor fitness de la poblacion y los ordeno
+    //Esto deberia ordenar la poblacion  de mejor a peor fitness
+    // y retorar el mejor score
+
+    best_ind.first = rank_population(pop);
+
+    best_ind.second = pop[0];
+
+    //Genero la nueva poblacion
+    new_generation(pop);
+
+  }
+
+  return best_ind.second;
+
+}
+
+int rank_population(vector<individual>& pop){
+  return 0;
+}
+
+void new_generation(vector<individual>& pop){
+  return pop;
+}
+
+*/
 
 
 
@@ -295,38 +299,3 @@ bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsig
   return firstElem.first < secondElem.first;
 }
 
-// Le das un tablero y te genera el mejor jugador
-individual genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int benchmark, unsigned int max, unsigned int alpha){
-
-  // Genero la poblacion inicial
-  vector<individual> pop(pop_size,individual(ind_size));
-  pop = init_rnd_population(pop,max);
-
-  // Itero hasta superar mi benchmark
-  pair<int,unsigned int> best_ind = make_pair(0,0);
-  while(best_ind.first < benchmark){
-
-    // Calculo el mejor fitness de la poblacion y los ordeno
-    //Esto deberia ordenar la poblacion  de mejor a peor fitness
-    // y retorar el mejor score
-
-    best_ind.first = rank_population(pop);
-
-    best_ind.second = pop[0];
-
-    //Genero la nueva poblacion
-    new_generation(pop);
-
-  }
-
-  return best_ind.second;
-
-}
-
-int rank_population(vector<individual>& pop){
-  return 0;
-}
-
-void new_generation(vector<individual>& pop){
-  return pop;
-}

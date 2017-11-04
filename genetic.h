@@ -3,6 +3,7 @@
 #include <stdlib.h>   //rand
 #include <utility>    //pair
 #include <algorithm>  //sort
+#include <string>
 #include <vector>
 
 using namespace std;
@@ -26,6 +27,8 @@ struct paramsGen{
   int quantInd_a_Cross; //cuantos genes copiar de a (y por resta, de b)
   int probMut;          //probabilidad a mutar (será 1/probMut)
   int maxMut;           //maximo valor de mutación
+  string player1;
+  string player2;
 };
 
 struct matchResults{
@@ -33,23 +36,33 @@ struct matchResults{
   int lost;
   int tied;
   int median_w_time;
-  int meadian_l_time;
-}
+  int median_l_time;
+  vector<individual> weights;
+  int indexPop; //indice en vector<individual> population, si usamos tournament
+};
 
 //Ḿétodos
 
 void init_rnd_population(vector<individual>& population, unsigned int max);
 void init_population(vector<individual>& population);
-
-void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params);
-
-vector<pair<int, unsigned int> > get_fittest(matchBoard board, vector<individual>& fittest, vector<individual>& population, string player1, string player2, int iter);
-vector<pair<matchResults,matchResults> > fitness_population(matchBoard board, vector<pait<int, unsigned int> >& scores, vector<individual>& population, string player1, string player2, int iter);
-vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a);
 individual crossover(individual& individual_a, individual& individual_b, int quantInd_a);
 void mutation(vector<individual>& population, int prob, int max);
+vector<pair<matchResults,matchResults> > tournament(matchBoard board, vector<individual>& population, string player1, string player2, int iter);
+pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2, int p1i, int p2i, string player1, string player2, int iter, matchBoard& board);
 
-pair<matchResults,matchResults> match(vector<int> weights1,vector<int> weights2, string player1, string player2, int iter, matchBoard& board);
+//Helix
+void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params);
+vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<indivudal> fittest, vector<individual>& population, string player1, string player2, int iter);
+void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores);
+int score_helix(matchResults match);
+vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a);
+
+
+//Paté
+individual genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int benchmark, unsigned int max, unsigned int alpha);
+void new_generation(vector<individual>& pop);
+int rank_population(vector<individual>& pop);
+
 
 //Auxiliares
 
@@ -57,7 +70,3 @@ pair<matchResults,matchResults> match(vector<int> weights1,vector<int> weights2,
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem);
 
 
-// Cosas de Pato wip
-individual genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int benchmark, unsigned int max, unsigned int alpha);
-void new_generation(vector<individual>& pop);
-int rank_population(vector<individual>& pop);
