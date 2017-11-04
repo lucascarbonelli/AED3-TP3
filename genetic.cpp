@@ -24,16 +24,16 @@ void init_population(vector<individual>& population){
 //por ejemplo, quantInd_a = individual_a.size()/2 daría mitad de uno y otro
 //CUIDADO: toma ints, así que hacer ceil o floor
 individual crossover(individual& individual_a, individual& individual_b, int quantInd_a, ofstream& log){
-  log << "empezo crossover con a " << individual_a.size() <<  " y b " << individual_b.size() << endl;
+
   individual res;
   for (int i = 0; i < quantInd_a; ++i){
     res.push_back(individual_a[i]);
   }
-  log << "meti los de a" << endl;
+
   for (int i = quantInd_a; i < individual_b.size(); ++i){
     res.push_back(individual_b[i]);
   }
-  log << "meti los de b" << endl;
+
   return res;
 }
 
@@ -137,10 +137,10 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
   //buscamos sus #breeds mejores
   vector<individual> old_better_ones(params.breeds);
   get_fittest_helix(board, old_better_ones, old_population, params.iter, log);
-  log << "termine los dos fit" << endl;
+
   //reproducimos los viejos mejores con los mejores globales
   vector<individual> new_generation = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross, log);
-  log << "termine breed y quedo " << new_generation.size() << endl;
+
   //los juntamos en new population
   new_population.clear();
   for (int i = 0; i < params.news; ++i){
@@ -149,35 +149,32 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
   for (int i = 0; i < params.breeds; ++i){
     new_population.push_back(new_generation[i]);
   }
-  log << "ACA ACA ACA ACA " << new_population.size() << " " << params.breeds + params.news << endl;
-  log << "mergie las dos populations" << endl;
+
   //mutamos
   mutation(new_population, params.probMut, params.maxMut);
-  log << "mutaron" << endl;
-  //save_population(new_population, n, m, c, p);
 
 }
 
 
 vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual>& fittest, vector<individual>& population, int iter, ofstream& log){
-  log << "empezo fit helix " << fittest.size() << " " << population.size() << endl;
+
   //first es score y second es indice del individuo en population
   vector<pair<int, unsigned int> > scores(population.size());
   for (int i = 0; i < scores.size(); ++i){scores[i].first = 0;}
-  log << "scores inicializado" << endl;
+
   //rankeamos a cada individuo
   vector<pair<matchResults,matchResults> > fixture = tournament(board, population, iter);
-  log << "tournament terminado" << endl;
+
   fitness_population_helix(fixture, scores);
-  log << "fitness con fixture" << endl;
+
   //los ordeno con pairCompare
   sort(scores.begin(), scores.end(), pairCompare);
-  log << "sort de scores" << endl;
+
   //meto todo en fittest
   for (int i = 0; i < fittest.size(); ++i){
     fittest[i] = population[scores[population.size()-1-i].second];
   }
-  log << "fittest lleno" << endl;
+
   //devuelvo los scores con su indice en population (si se toma el indice de scores, se ignora scores.second, matchea con fittest)
   return scores;
 }
@@ -201,16 +198,15 @@ int score_helix(matchResults match){
 //este método mezcla los individuos entre dos populations
 //puede hacerse otro método que se llame crossover y mezcle los individuos de una sola population
 vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a, ofstream& log){
-  log << "empezo breed" << endl;
   vector<individual> res;
 
   int min_population = population_a.size();
   if(population_b < population_a) min_population = population_b.size();
-  log << "min pop calculado" << endl;
+
   for (int i = 0; i < min_population; ++i){
     res.push_back(crossover(population_a[i], population_b[i], quantInd_a, log));
   }
-  log << "res terminado" << endl;
+
   return res;
 }
 
