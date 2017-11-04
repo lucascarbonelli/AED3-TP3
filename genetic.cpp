@@ -53,29 +53,22 @@ void mutation(vector<individual>& population, int prob, int max){
 
 
 //según el enunciado, no es recomendado hacer jugar con minimax_player, tarda mucho
-vector<pair<matchResults,matchResults> > tournament(matchBoard board, vector<individual>& population, string player1, string player2, int iter){
+vector<pair<matchResults,matchResults> > tournament(matchBoard board, vector<individual>& population, int iter){
 
   //en matchResults tenemos qué weight fué
   vector<pair<matchResults,matchResults> > fixture;
   for (int i = 0; i < population.size(); ++i){
-    //si es minimax_player, minimax no necesita weights2
-    if(player2 != "minimax_player"){
-      for (int j = i+1; j < population.size(); ++j){
-        fixture.push_back(match(population[i], population[j], i, j, player1, player2, iter, board));
-      }
-    } else {
-      fixture.push_back(match(population[i], population[i], i, i, player1, player2, iter, board));
+    for (int j = i+1; j < population.size(); ++j){
+      fixture.push_back(match(population[i], population[j], i, j, iter, board));
     }
   }
-
   return fixture;
 }
 
-//En player1 o player2 pasar: parametric_player, minimax_player, etc...
-pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2, int p1i, int p2i, string player1, string player2, int iter, matchBoard& board){
+pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2, int p1i, int p2i, int iter, matchBoard& board){
 
   /* Seteamos parametros */
-  string cmd = "python c_linea.py --blue_player ./" + player1;
+  string cmd = "python c_linea.py --blue_player ./parametric_player";
   /* pasamos weights 1 */
   cmd += " " + to_string(iter); /* cantidad de iteraciones */
   cmd += " " + to_string(weights1.size()); /* cantidad de parametros */
@@ -85,14 +78,12 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
   }
 
   /* pasamos weights 2*/
-  cmd+= " --red_player ./" + player2;
+  cmd+= " --red_player ./parametric_player";
   //cmd += " " + to_string(iter); /* cantidad de iteraciones */
-  if(player2 != "minimax_player"){
-    cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
-
-    for (int i = 0; i < weights2.size(); ++i){
-      cmd += " " + to_string(weights2[i]);
-    }
+  cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
+  
+  for (int i = 0; i < weights2.size(); ++i){
+    cmd += " " + to_string(weights2[i]);
   }
 
   cmd += " --iterations " + to_string(iter);
@@ -135,7 +126,7 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params){
   //tomamos #breeds better ones
   vector<individual> better_ones(params.breeds);
-  get_fittest_helix(board, better_ones, population, params.player1, params.player2, params.iter);
+  get_fittest_helix(board, better_ones, population, params.iter);
 
   //nos guardamos los viejos de la población (los no new)
   vector<individual> old_population;
@@ -144,7 +135,7 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
   }
   //buscamos sus #breeds mejores
   vector<individual> old_better_ones(params.breeds);
-  get_fittest_helix(board, old_better_ones, old_population, params.player1, params.player2, params.iter);
+  get_fittest_helix(board, old_better_ones, old_population, params.iter);
 
   //reproducimos los viejos mejores con los mejores globales
   vector<individual> new_generation = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross);
@@ -165,14 +156,14 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
 }
 
 
-vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual> fittest, vector<individual>& population, string player1, string player2, int iter){
+vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual> fittest, vector<individual>& population, int iter){
 
   //first es score y second es indice del individuo en population
   vector<pair<int, unsigned int> > scores(population.size());
   for (int i = 0; i < scores.size(); ++i){scores[i].first = 0;}
 
   //rankeamos a cada individuo
-  vector<pair<matchResults,matchResults> > fixture = tournament(board, population, player1, player2, iter);
+  vector<pair<matchResults,matchResults> > fixture = tournament(board, population, iter);
   fitness_population_helix(fixture, scores);
 
   //los ordeno con pairCompare
