@@ -69,3 +69,4 @@ int rank_population(vector<individual>& pop);
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem);
 int porcentage(int total, int porc);
 int mean(vector<vector< int > > numbers, int modifier);
+void vectorPrinter(vector<vector<int> >& v);

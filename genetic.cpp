@@ -80,7 +80,7 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 
   /* pasamos weights 2*/
   cmd+= " --red_player ./parametric_player";
-  //cmd += " " + to_string(iter); /* cantidad de iteraciones */
+  cmd += " " + to_string(iter); /* cantidad de iteraciones */
   cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
   
   for (int i = 0; i < weights2.size(); ++i){
@@ -319,4 +319,22 @@ int mean(vector<vector< int > > numbers, int modifier){
   res = res/numbers.size();
 
   return floor(res*modifier);
+}
+
+
+void vectorPrinter(vector<vector<int> > & v, ofstream& log){
+  log << "{";
+  for (int i = 0; i < v.size()-1; ++i){
+    log << " {";
+    for (int j = 0; j < v[i].size()-1; ++j){
+      log << v[i][j] << ", ";
+    }
+    log << v[i][v[i].size()-1] << "}, ";
+  }
+
+  log << " {";
+  for (int j = 0; j < v[v.size()-1].size()-1; ++j){
+    log << v[v.size()-1][j] << ", ";
+  }
+  log << v[v.size()-1][v[v.size()-1].size()-1] << "} }";
 }

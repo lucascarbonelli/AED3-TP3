@@ -85,5 +85,8 @@ int main(int argc, const char* argv[]) {
     log << "termine está iteración" << endl;
   }
 
+  ofstream logRes("res.txt");
+  vectorPrinter(best_ones, logRes);
+
   return 0;
 }
