@@ -68,7 +68,7 @@ vector<pair<matchResults,matchResults> > tournament(matchBoard board, vector<ind
 pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2, int p1i, int p2i, int iter, matchBoard& board){
 
   /* Seteamos parametros */
-  string cmd = "python c_linea.py --blue_player ./parametric_player";
+  string cmd = "python2 c_linea.py --blue_player ./parametric_player";
   /* pasamos weights 1 */
   cmd += " " + to_string(iter); /* cantidad de iteraciones */
   cmd += " " + to_string(weights1.size()); /* cantidad de parametros */
@@ -126,7 +126,7 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log){
   //tomamos #breeds better ones
   vector<individual> better_ones(params.breeds);
-  get_fittest_helix(board, better_ones, population, params.iter);
+  get_fittest_helix(board, better_ones, population, params.iter, log);
 
   //nos guardamos los viejos de la población (los no new)
   vector<individual> old_population;
@@ -135,7 +135,7 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
   }
   //buscamos sus #breeds mejores
   vector<individual> old_better_ones(params.breeds);
-  get_fittest_helix(board, old_better_ones, old_population, params.iter);
+  get_fittest_helix(board, old_better_ones, old_population, params.iter, log);
 
   //reproducimos los viejos mejores con los mejores globales
   vector<individual> new_generation = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross);
@@ -156,7 +156,7 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
 }
 
 
-vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual> fittest, vector<individual>& population, int iter){
+vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual> fittest, vector<individual>& population, int iter, ofstream& log){
 
   //first es score y second es indice del individuo en population
   vector<pair<int, unsigned int> > scores(population.size());

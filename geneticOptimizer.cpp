@@ -46,9 +46,7 @@ int main(int argc, const char* argv[]) {
 
   ofstream log("log_gen_helix.txt");
 
-
-  vector<individual>  population(20);
-  init_rnd_population(population, 100);
+  log << "comenzo el debug" << endl;
 
   matchBoard board;
   board.m = 5;
@@ -57,8 +55,17 @@ int main(int argc, const char* argv[]) {
   board.p = 60;
   board.w1_first = true;
 
+  log << "board inicial" << endl;
+ 
+  vector<individual>  population(20, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
+  init_rnd_population(population, 100);
+
+  log << "poplation inicial" << endl;
+
   vector<individual> best_ones(3);
-  get_fittest_helix(board, best_ones, population, 10);
+  get_fittest_helix(board, best_ones, population, 10, log);
+
+  log << "fittest helix inicial" << endl;
 
   paramsGen params;
   params.news = porcentage(population.size(), 30);
@@ -68,8 +75,11 @@ int main(int argc, const char* argv[]) {
   params.probMut = 100000;
   params.maxMut = mean(population, 2.5);
 
+  log << "params inicial" << endl;
+
   vector<individual> new_population(params.news+params.breeds);
 
+  log << "new population inicial" << endl;
 
   while(new_population.size() > 2){
     //corro la genetica
@@ -94,7 +104,7 @@ int main(int argc, const char* argv[]) {
 
     log << "forme all individuals" << endl;
 
-    get_fittest_helix(board, best_ones, all_individuals, 10);   
+    get_fittest_helix(board, best_ones, all_individuals, 10, log);   
 
     log << "termine está iteración" << endl;
   }

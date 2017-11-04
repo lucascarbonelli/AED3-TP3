@@ -51,7 +51,7 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 
 //Helix
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log);
-vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual> fittest, vector<individual>& population, int iter);
+vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual> fittest, vector<individual>& population, int iter, ofstream& log);
 void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores);
 int score_helix(matchResults match);
 vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a);
