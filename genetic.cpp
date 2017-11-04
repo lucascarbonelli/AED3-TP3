@@ -4,7 +4,16 @@
 /******************************************************************************/
 /******************************************************************************/
 
-pair<float,float> match(vector<int> weights1,vector<int> weights2, int iter, matchBoard& board){
+struct matchResults{
+  int won;
+  int lost;
+  int tied;
+  int median_w_time;
+  int meadian_l_time;
+}
+
+
+pair<matchResults,matchResults> match(vector<int> weights1,vector<int> weights2, int iter, matchBoard& board){
 
   /* Seteamos parametros */
   string cmd = "python c_linea.py --blue_player ./parametric_player";
@@ -37,25 +46,23 @@ pair<float,float> match(vector<int> weights1,vector<int> weights2, int iter, mat
   ifstream red_results("rojo.txt");
   ifstream blue_results("azul.txt");
 
-  int won,lost,tied, mean_l_time, mean_w_time;
-  int total_won, avg_mean;
+  matchResults blue,red;
 
-  blue_results >> won;
-  blue_results >> lost;
-  blue_results >> tied;
-  blue_results >> mean_l_time;
-  blue_results >> mean_w_time;
+  blue_results >> blue.won;
+  blue_results >> blue.lost;
+  blue_results >> blue.tied;
+  blue_results >> blue.median_w_time;
+  blue_results >> blue.median_l_time;
 
   float score_w1 = won/mean_w_time - lost/mean_l_time;
 
-  red_results >> won;
-  red_results >> lost;
-  red_results >> tied;
-  red_results >> mean_l_time;
-  red_results >> mean_w_time;
+  red_results >> red.won;
+  red_results >> red.lost;
+  red_results >> red.tied;
+  red_results >> red.median_w_time;
+  red_results >> red.median_l_time;
 
-  float score_w2 = won/mean_w_time - lost/mean_l_time;
-  return make_pair(score_w1,score_w2);
+  return make_pair(blue,red);
 }
 
 
@@ -63,7 +70,7 @@ pair<float,float> match(vector<int> weights1,vector<int> weights2, int iter, mat
 /******************************************************************************/
 
 
-
+/*
 vector<pair<int,unsigned int> > tournament(vector<individual> population, matchBoard& board){
   // vector de pares que representan < num_inidividio , score_total >
 
@@ -83,6 +90,7 @@ vector<pair<int,unsigned int> > tournament(vector<individual> population, matchB
   return results;
 }
 
+*/
 void init_rnd_population(vector<individual>& population, unsigned int max){
   unsigned int size = population.size();
   unsigned int num_features = population[0].size();
