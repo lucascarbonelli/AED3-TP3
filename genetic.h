@@ -44,17 +44,17 @@ struct matchResults{
 
 void init_rnd_population(vector<individual>& population, unsigned int max);
 void init_population(vector<individual>& population);
-individual crossover(individual& individual_a, individual& individual_b, int quantInd_a);
+individual crossover(individual& individual_a, individual& individual_b, int quantInd_a, ofstream& log);
 void mutation(vector<individual>& population, int prob, int max);
 vector<pair<matchResults,matchResults> > tournament(matchBoard board, vector<individual>& population, int iter);
 pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2, int p1i, int p2i, int iter, matchBoard& board);
 
 //Helix
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log);
-vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual> fittest, vector<individual>& population, int iter, ofstream& log);
+vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual>& fittest, vector<individual>& population, int iter, ofstream& log);
 void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores);
 int score_helix(matchResults match);
-vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a);
+vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a, ofstream& log);
 
 
 //Paté

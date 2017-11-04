@@ -8,39 +8,6 @@
 #include <sys/stat.h>
 #include "genetic.cpp"
 
-std::random_device rd;
-std::mt19937 generator(rd());
-
-void send(const std::string& msg) {
-    std::cout << msg << std::endl;
-}
-
-void send(int msg) {
-    std::cout << msg << std::endl;
-}
-
-int read_int() {
-    std::string msg;
-    std::cin >> msg;
-    if (msg == "salir") {
-        send("listo");
-        std::exit(0);
-    }
-    return std::stoi(msg);
-}
-
-std::string read_str() {
-    std::string msg;
-    std::cin >> msg;
-    if (msg == "salir") {
-        send("listo");
-        std::exit(0);
-    }
-    return msg;
-}
-
-
-
 
 int main(int argc, const char* argv[]) {
 
@@ -60,7 +27,7 @@ int main(int argc, const char* argv[]) {
   vector<individual>  population(20, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
   init_rnd_population(population, 100);
 
-  log << "poplation inicial" << endl;
+  log << "population inicial" << endl;
 
   vector<individual> best_ones(3);
   get_fittest_helix(board, best_ones, population, 10, log);
@@ -77,22 +44,31 @@ int main(int argc, const char* argv[]) {
 
   log << "params inicial" << endl;
 
-  vector<individual> new_population(params.news+params.breeds);
+  vector<individual> new_population(params.news+params.breeds, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
 
   log << "new population inicial" << endl;
 
+  log << endl << "empieza ciclo" << endl;
+
   while(new_population.size() > 2){
     //corro la genetica
-    log << "con población: " << population.size() << endl;
+    log <<  endl << "con población: " << population.size() << endl;
     helix(board, population, new_population, params, log);
-
+    log << "termine helix" << endl;
     //population es new population, y new population se vacía y achica
+    log << population.size() << endl;
     population.clear();
+    log << population.size() << endl;
     population = new_population;
+    log << "MIRAR ACAAAAAA: " << new_population.size() << " " << population.size() << endl;
     new_population.clear();
     params.news = porcentage(population.size(), 30);
     params.breeds = porcentage(population.size(), 20);
     new_population.resize(params.news+params.breeds);
+    for (int i = 0; i < new_population.size(); ++i){
+      individual new_individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2);
+      new_population[i] = new_individual;
+    }
 
     log << "actualize todo" << endl;
 
