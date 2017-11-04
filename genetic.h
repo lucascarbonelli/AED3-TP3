@@ -28,6 +28,14 @@ struct paramsGen{
   int maxMut;           //maximo valor de mutación
 };
 
+struct matchResults{
+  int won;
+  int lost;
+  int tied;
+  int median_w_time;
+  int meadian_l_time;
+}
+
 //Ḿétodos
 
 void init_rnd_population(vector<individual>& population, unsigned int max);
@@ -35,12 +43,13 @@ void init_population(vector<individual>& population);
 
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params);
 
-void get_better_ones(matchBoard board, vector<individual>& better_ones, vector<individual>& population, string fitness, int iter);
-vector<pair<int, unsigned int> > fitness_population(matchBoard board, vector<individual>& population);
-vector<pair<int, unsigned int> > fitness_others(matchBoard board, vector<individual>& population, int iter);
-vector<individual> crossover_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a);
-individual breed(individual& individual_a, individual& individual_b, int quantInd_a);
+vector<pair<int, unsigned int> > get_fittest(matchBoard board, vector<individual>& fittest, vector<individual>& population, string player1, string player2, int iter);
+void fitness_population(matchBoard board, vector<pait<int, unsigned int> >& scores, vector<individual>& population, string player1, string player2, int iter);
+vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a);
+individual crossover(individual& individual_a, individual& individual_b, int quantInd_a);
 void mutation(vector<individual>& population, int prob, int max);
+
+pair<matchResults,matchResults> match(vector<int> weights1,vector<int> weights2, string player1, string player2, int iter, matchBoard& board);
 
 //Auxiliares
 
