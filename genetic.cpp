@@ -1,6 +1,8 @@
 #include "genetic.h"
 
 
+/*---------------------------------------Globales------------------------------------------*/
+
 void init_rnd_population(vector<individual>& population, unsigned int max){
   unsigned int size = population.size();
 
@@ -127,31 +129,35 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 }
 
 
+/*---------------------------------------Selection y fitness Helix------------------------------------------*/
 
-//Selection y fitness Helix
 
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params){
-
+  //tomamos #breeds better ones
   vector<individual> better_ones(params.breeds);
-  get_fittest_helix(board, better_ones, population, params.player1, params.player2, params.fitness, params.iter);
+  get_fittest_helix(board, better_ones, population, params.player1, params.player2, params.iter);
 
+  //nos guardamos los viejos de la población (los no new)
   vector<individual> old_population;
   for (int i = 0; i < population.size()-params.news; ++i){
     old_population.push_back(population[i]);
   }
+  //buscamos sus #breeds mejores
   vector<individual> old_better_ones(params.breeds);
-  get_fittest_helix(board, old_better_ones, old_population, params.player1, params.player2, params.fitness, params.iter);
+  get_fittest_helix(board, old_better_ones, old_population, params.player1, params.player2, params.iter);
 
-  old_better_ones = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross);
+  //reproducimos los viejos mejores con los mejores globales
+  vector<individual> new_generation = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross);
 
-
+  //los juntamos en new population
   for (int i = 0; i < params.news; ++i){
     new_population.push_back(population[population.size()-1-i]);
   }
   for (int i = 0; i < params.breeds; ++i){
-    new_population.push_back(old_better_ones[i]);
+    new_population.push_back(new_generation[i]);
   }
 
+  //mutamos
   mutation(new_population, params.probMut, params.maxMut);
 
   //save_population(new_population, n, m, c, p);
@@ -163,9 +169,11 @@ vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<indi
 
   //first es score y second es indice del individuo en population
   vector<pair<int, unsigned int> > scores(population.size());
+  for (int i = 0; i < scores.size(); ++i){scores[i].first = 0;}
 
   //rankeamos a cada individuo
-  fitness_population_helix(tournament(board, population, player1, player2, iter), scores);
+  vector<pair<matchResults,matchResults> > fixture = tournament(board, population, player1, player2, iter);
+  fitness_population_helix(fixture, scores);
 
   //los ordeno con pairCompare
   sort(scores.begin(), scores.end(), pairCompare);
@@ -212,8 +220,7 @@ vector<individual> breed_twopops(vector<individual>& population_a, vector<indivi
 }
 
 
-
-//Selection y Fitness Paté
+/*---------------------------------------Selection y fitness Paté------------------------------------------*/
 /*
 // Le das un tablero y te genera el mejor jugador
 individual genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int benchmark, unsigned int max, unsigned int alpha){
@@ -296,3 +303,4 @@ void save_population(vector<individual> population, int n, int m, int c, int p){
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem){
   return firstElem.first < secondElem.first;
 }
+

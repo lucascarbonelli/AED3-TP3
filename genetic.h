@@ -22,7 +22,6 @@ struct matchBoard{
 struct paramsGen{
   int news;             //cantidad de news para helix
   int breeds;           //cantiadad de better olds a breedear
-  string fitness;       //qué fitness usar
   int iter;             //cuantas iteracones para el fitness others
   int quantInd_a_Cross; //cuantos genes copiar de a (y por resta, de b)
   int probMut;          //probabilidad a mutar (será 1/probMut)
@@ -52,7 +51,7 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 
 //Helix
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params);
-vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<indivudal> fittest, vector<individual>& population, string player1, string player2, int iter);
+vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual> fittest, vector<individual>& population, string player1, string player2, int iter);
 void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores);
 int score_helix(matchResults match);
 vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a);
