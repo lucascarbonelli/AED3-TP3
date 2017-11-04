@@ -295,3 +295,24 @@ bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsig
   return firstElem.first < secondElem.first;
 }
 
+int porcentage(int total, int porc){
+  return floor(porc*total/100);
+}
+
+int mean(vector<vector< int > > numbers, int modifier){
+  
+  int res = 0;
+
+  for (int i = 0; i < numbers.size(); ++i){
+  
+    int actual = 0;
+    for (int j = 0; j < numbers[0].size(); ++j){
+        actual = actual + numbers[i][j];
+    }
+    actual = actual/numbers[0].size();
+    res = res + actual;
+  }
+  res = res/numbers.size();
+
+  return floor(res*modifier);
+}

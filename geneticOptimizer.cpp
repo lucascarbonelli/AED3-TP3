@@ -41,46 +41,55 @@ std::string read_str() {
 
 
 
-/* Funfionces propias de genetic player */
 
-int geneticGeneration(int n, int m , int c, int p, bool red_player_first, vector<individual> population){
-  
-}
+int main(int argc, const char* argv[]) {
 
 
 
-int main() {
+  vector<individual>  population(20);
+  init_rnd_population(population, 100);
 
-  int c = 4;
-  int columns = 7;
-  int rows = 6;
-  int p = 21;
+  matchBoard board;
+  board.m = 5;
+  board.n = 5;
+  board.c = 4;
+  board.p = 60;
+  board.w1_first = true;
 
-  vector<int> weights(c+columns+1,0);
-  /*
-  for (int i = 0; i < c; i++) {
-    weights[i] = i;
+  vector<individual> best_ones(3);
+  get_fittest_helix(board, best_ones, population, 10);
+
+  paramsGen params;
+  params.news = porcentage(population.size(), 30);
+  params.breeds = porcentage(population.size(), 20);
+  params.iter = 10;
+  params.quantInd_a_Cross = floor((params.news+params.breeds)/2);
+  params.probMut = 100000;
+  params.maxMut = mean(population, 2.5);
+
+  vector<individual> new_population(params.news+params.breeds);
+
+
+  while(new_population.size() > 2){
+    //corro la genetica
+    helix(board, population, new_population, params);
+
+    //population es new population, y new population se vacía y achica
+    population.clear();
+    population = new_population;
+    new_population.clear();
+    params.news = porcentage(population.size(), 30);
+    params.breeds = porcentage(population.size(), 20);
+    new_population.resize(params.news+params.breeds);
+
+    //actualizo los mejores globales
+    vector<individual> all_individuals = population;
+    all_individuals.push_back(best_ones[0]);
+    all_individuals.push_back(best_ones[1]);
+    all_individuals.push_back(best_ones[2]);
+
+    get_fittest_helix(board, best_ones, all_individuals, 10);   
   }
-  for (int i = c ; i < c + columns; i++) {
-    weights[i] = -5*i;
-  }*/
-  weights = {0, 4, -1, 1, 3, -4, 1, 2, -1, -3, 1, 5};
-  weights = {-1, 1, 4, 15, 100, -4, 3, -4, 3, -2, 2, 100};
-  vector<int> range{-15,-10,-5,-4,-3,-2,-1,0,1,2,3,4,5,10,15};
 
-  /* fijamos algunas */
-  //weights[c-1] = 1000000;
-  weights[c+columns] = 1000000;
-
-  weights = randomSearch(c+columns+1,range,150,weights,rows,columns,c,p);
-
-  cout << "Weights: " << endl;
-  for (size_t i = 0; i < weights.size(); i++) {
-    cout << weights[i] << " ";
-  }
-  cout << endl;
-
-  float won = fitness(weights,1000,rows,columns,c,p);
-
-    return 0;
+  return 0;
 }
