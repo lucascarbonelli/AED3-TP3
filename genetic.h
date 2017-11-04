@@ -16,7 +16,7 @@ struct matchBoard{
   int m; //columnas
   int c; //c-linea
   int p; //cantidad fichas
-  bool red_player_first;
+  bool w1_first;
 };
 
 struct paramsGen{
@@ -37,7 +37,7 @@ struct matchResults{
   int tied;
   int median_w_time;
   int median_l_time;
-  vector<individual> weights;
+  individual weights;
   int indexPop; //indice en vector<individual> population, si usamos tournament
 };
 
@@ -68,5 +68,3 @@ int rank_population(vector<individual>& pop);
 
 //void save_population(vector<individual> population, int n, int m, int c, int p);
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem);
-
-

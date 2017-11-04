@@ -87,14 +87,14 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
   //cmd += " " + to_string(iter); /* cantidad de iteraciones */
   if(player2 != "minimax_player"){
     cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
-  
+
     for (int i = 0; i < weights2.size(); ++i){
       cmd += " " + to_string(weights2[i]);
     }
   }
 
   cmd += " --iterations " + to_string(iter);
-  if(w1_first) {
+  if(board.w1_first) {
     cmd += " --first azul --columns "+to_string(board.m)+" --rows "+to_string(board.n)+" --p "+to_string(board.p)+" --c "+to_string(board.c)+" ";
   } else {
     cmd += " --first rojo --columns "+to_string(board.m)+" --rows "+to_string(board.n)+" --p "+to_string(board.p)+" --c "+to_string(board.c)+" ";
@@ -114,8 +114,6 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
   blue_results >> blue.median_l_time;
   blue.weights = weights1;
   blue.indexPop = p1i;
-
-  float score_w1 = won/mean_w_time - lost/mean_l_time;
 
   red_results >> red.won;
   red_results >> red.lost;
@@ -298,4 +296,3 @@ void save_population(vector<individual> population, int n, int m, int c, int p){
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem){
   return firstElem.first < secondElem.first;
 }
-
