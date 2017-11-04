@@ -7,7 +7,6 @@ using namespace std;
 
 struct Solution{
   vector<int> weights;
-  int score;
 };
 
 
@@ -40,53 +39,12 @@ float fitness(vector<int> weights, int iter, int rows , int columns, int c, int 
 
   float score = won/median_w_time - lost/median_l_time;
   cout << "Score: " << score << endl;
-
+  cout << "Won " << won << " times."<< endl;
+  cout << "Lost " << lost << " times."<< endl;
+  cout << "Tied " << tied << " times."<< endl;
   return score;
 
 }
-
-void backtrack(vector<int>& weights, vector<int>& range, int n, Solution& S,int& iter){
-
-  /* caso base */
-  if(n == 0){
-    //int score = fitness(weights,50);
-    int score =0;
-    if(score > S.score ){
-      //cout << "Found better score: " << score << endl;
-      S.weights = weights;
-      S.score = score;
-    }
-    /* para la ansiedad */
-    cout << "Iter: " << iter << endl;
-    iter++;
-    return;
-  }
-
-  for (size_t i = 0; i < range.size(); i++) {
-    weights.push_back(range[i]);
-    backtrack(weights,range,n-1,S,iter);
-    weights.pop_back();
-  }
-}
-
-vector<int> gridSearch(int params, vector<int> range){
-  int iter = 0;
-  vector<int> weights;
-  Solution S;
-  S.weights = weights;
-  S.score = -1;
-
-  backtrack(weights,range,params,S,iter);
-  return S.weights;
-
-}
-
-
-
-/********************************************************************/
-/********************************************************************/
-/********************************************************************/
-/********************************************************************/
 
 pair<float,float> match(vector<int> weights1,vector<int> weights2, int iter,int rows,int columns,int c, int p, int w1_first){
 
@@ -122,24 +80,24 @@ pair<float,float> match(vector<int> weights1,vector<int> weights2, int iter,int 
   ifstream red_results("rojo.txt");
   ifstream blue_results("azul.txt");
 
-  int won,lost,tied, mean_l_time, mean_w_time;
+  int won,lost,tied, median_l_time, median_w_time;
   int total_won, avg_mean;
 
   blue_results >> won;
   blue_results >> lost;
   blue_results >> tied;
-  blue_results >> mean_l_time;
-  blue_results >> mean_w_time;
+  blue_results >> median_w_time;
+  blue_results >> median_l_time;
 
-  float score_w1 = won/mean_w_time - lost/mean_l_time;
+  float score_w1 = won/median_w_time - lost/median_l_time;
 
   red_results >> won;
   red_results >> lost;
   red_results >> tied;
-  red_results >> mean_l_time;
-  red_results >> mean_w_time;
+  red_results >> median_w_time;
+  red_results >> median_l_time;
 
-  float score_w2 = won/mean_w_time - lost/mean_l_time;
+  float score_w2 = won/median_w_time - lost/median_l_time;
 
   return make_pair(score_w1,score_w2);
 
@@ -147,10 +105,65 @@ pair<float,float> match(vector<int> weights1,vector<int> weights2, int iter,int 
 }
 
 
+vector<int> generateRandomWeights(int params,vector<int> range){
+
+  vector<int> weights;
+  for (size_t i = 0; i < params; i++) {
+    int e = range[rand() % range.size()];
+    weights.push_back(e);
+  }
+  return weights;
+}
+
+
+
+void backtrack(vector<int>& weights, vector<int>& range, int n, Solution& S,int& iter,int rows , int columns, int c, int p){
+
+  /* caso base */
+  if(n == 0){
+    pair<float,float> score = match(weights,S.weights,5,rows,columns,c,p,true);
+    if(score.first > score.second ){
+      cout << "Found better score: " << score.first << " " << score.second << endl;
+      S.weights = weights;
+    }
+    cout << endl;
+
+    /* para la ansiedad */
+    cout << "Iter: " << iter << endl;
+    iter++;
+    return;
+  }
+
+  for (size_t i = 0; i < range.size(); i++) {
+    weights.push_back(range[i]);
+    backtrack(weights,range,n-1,S,iter,rows,columns,c,p);
+    weights.pop_back();
+  }
+}
+
+vector<int> gridSearch(int params, vector<int> range,vector<int> init_Weights,int rows , int columns, int c, int p){
+  int iter = 0;
+  int n = params;
+  vector<int> weights;
+  Solution S;
+  S.weights = generateRandomWeights(params,range);
+
+  backtrack(weights,range,n+1,S,iter,rows,columns,c,p);
+  return S.weights;
+
+}
+
+
+
+/********************************************************************/
+/********************************************************************/
+/********************************************************************/
+/********************************************************************/
 
 
 
 
+//vector<int> HeuristicGridSeach(int range)
 
 
 
@@ -177,7 +190,7 @@ int compareWeights(vector<int> weights1,vector<int> weights2, int iter, int rows
   pair<float,float> scores1 = match(weights1, weights2, iter, rows , columns, c, p,true);
   pair<float,float> scores2 = match(weights1, weights2, iter, rows , columns, c, p,false);
   /* veamos quien es el mejor */
-  bool better_than_random = (fitness(weights1,100,rows,columns,c,p)>=fitness(weights2,100,rows,columns,c,p));
+  bool better_than_random = (fitness(weights1,iter,rows,columns,c,p)>=fitness(weights2,iter,rows,columns,c,p));
 
   if(((scores1.first + scores2.first) > (scores1.second + scores2.second)) && better_than_random ) return 1;
   return 0;
@@ -186,18 +199,7 @@ int compareWeights(vector<int> weights1,vector<int> weights2, int iter, int rows
 
 
 
-vector<int> generateRandomWeights(int params,vector<int> range){
 
-  vector<int> weights;
-  for (size_t i = 0; i < params; i++) {
-    int e = range[rand() % range.size()];
-    weights.push_back(e);
-  }
-  weights[0] = 0;
-  weights[4] = 100;
-  weights[params-1] = 1000000;
-  return weights;
-}
 
 vector<int> randomSearch(int params, vector<int> range, int iterations, vector<int>& init_Weights, int rows , int columns, int c, int p ){
 
@@ -246,7 +248,7 @@ int main(){
   int rows = 6;
   int p = 21;
 
-  vector<int> weights(c+columns+1,0);
+  //vector<int> weights(c+columns+1,0);
   /*
   for (int i = 0; i < c; i++) {
     weights[i] = i;
@@ -254,15 +256,18 @@ int main(){
   for (int i = c ; i < c + columns; i++) {
     weights[i] = -5*i;
   }*/
-  weights = {0, 4, -1, 1, 3, -4, 1, 2, -1, -3, 1, 5};
-  weights = {-1, 1, 4, 15, 100, -4, 3, -4, 3, -2, 2, 1000000};
-  vector<int> range{-15,-10,-5,-4,-3,-2,-1,0,1,2,3,4,5,10,15};
+  //weights = {0, 4, -1, 1, 3, -4, 1, 2, -1, -3, 1, 5};
+  //weights = {-1, 1, 4, 15, 100, -4, 3, -4, 3, -2, 2, 1000000};
+  //vector<int> range{-5,-2,0,2,5};
 
-  /* fijamos algunas */
-  //weights[c-1] = 1000000;
-  weights[c+columns] = 1000000;
+  ///* fijamos algunas */
+  ////weights[c-1] = 1000000;
+  //weights[c+columns] = 1000000;
 
-  weights = randomSearch(c+columns+1,range,150,weights,rows,columns,c,p);
+  vector<int> weights = {4, 15, 1000000, -10, 0, 1, 2, 3, 2, 1, 0,5,10,-6,-11};
+  vector<int> range{-100,-5,-2,0,2,5,100};
+
+  //weights = gridSearch(c,range,weights,rows,columns,c,p);
 
   cout << "Weights: " << endl;
   for (size_t i = 0; i < weights.size(); i++) {

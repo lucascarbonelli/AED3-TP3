@@ -156,56 +156,62 @@ void Board::backtrack(int col){
 /*********************************************************/
 
 
-int Board::horizonal(int i, int j, int player){
-  /* Chequear lineas horizontales */
+
+int Board::horizontal(int i, int j, int player){
+  /* Chequear lineas diagonales (\) */
   int left = 0,right = 0;
 
-  for (int k = j + 1; k < min(j+_c,_cols); k++) {
-    if(_board[i][k] == player) right++;
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = j + k < _cols;
+    if( ok &&  _board[i][j + k] == player) right++;
     else break;
   }
-  for (int k = j - 1; k >= max(j-_c,0); k--) {
-    if(_board[i][k] == player) left++;
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = 0 <= j-k;
+    if( ok &&  _board[i][j - k] == player) left++;
     else break;
   }
-
-  return left + 1 + right;
+  return (left + 1 + right);
 }
 
+
 int Board::vertical(int i, int j, int player){
+  /* Chequear lineas verticales */
+  int up = 0, down = 0;
 
-  int up = 0,down = 0;
-
-  for (int k = i + 1; k < min(i+_c,_rows); k++) {
-    if(_board[k][j] == player) up++;
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = i + k < _rows;
+    if( ok &&  _board[i+k][j] == player) up++;
     else break;
   }
-  for (int k = i - 1; k >= max(i-_c,0); k--) {
-    if(_board[k][j] == player) down++;
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = 0 <= i-k;
+    if( ok &&  _board[i-k][j] == player) down++;
     else break;
   }
-
-  return up + 1 + down;
-
+  return (up + 1 + down);
 }
 
 
 int Board::diagonalR(int i, int j, int player){
-  /* Chequear lineas diagonales (/) */
-  int up = 0,down = 0;
+  /* Chequear lineas diagonales(/) */
+  int up = 0, down = 0;
 
-  for (int k = 1; k < min(i+_c, min(_rows, _cols)) - i ; k++) {
-    if(_board[i + k][j + k] == player) up++;
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = (j + k < _rows) && (i + k < _rows);
+    if( ok &&  _board[i + k][j + k] == player) up++;
     else break;
   }
-  for (int k = 1; k < i - max(i-_c, max(j-_c,0)); k++) {
-    if(_board[i - k][j - k] == player) down++;
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = (j - k > 0) && (i - k > 0);
+    if( ok &&  _board[i - k][j - k] == player) down++;
     else break;
   }
-
-  return up + 1 + down;
-
+  return (up + 1 + down);
 }
+
+
+
 
 
 int Board::diagonalL(int i, int j, int player){
@@ -229,23 +235,25 @@ int Board::diagonalL(int i, int j, int player){
 /***********************************************************/
 
 vector<int> Board::lineCounts(int player){
+  // contamos lineas de longitud 2 hasta longitud c
 
-  vector<int> count(_c,0);
+
+  vector<int> count(_c - 1,0);
 
   for (int i = 0; i < _rows; i++) {
     for (int j = 0; j < _cols; j++) {
       if(_board[i][j] == player){
-        count[horizonal(i,j,player)]++;
-        if(vertical(i,j,player) > 1) count[vertical(i,j,player)]++;
-        if(diagonalL(i,j,player) > 1) count[diagonalL(i,j,player)]++;
-        if(diagonalR(i,j,player) > 1) count[diagonalR(i,j,player)]++;
+        if(horizontal(i,j,player) >= 2) count[horizontal(i,j,player)-2]++;
+        if(vertical(i,j,player) >=2) count[vertical(i,j,player)-2]++;
+        if(diagonalL(i,j,player) >=2) count[diagonalL(i,j,player)-2]++;
+        if(diagonalR(i,j,player) > 2) count[diagonalR(i,j,player)-2]++;
       }
     }
   }
 
-  for (int i = 1; i < count.size(); i++) {
+  for (int i = 0; i < _c - 1; i++) {
     /* eliminamos repetidos */
-    count[i] = count[i] / i;
+    count[i] = count[i]/(i+2);
   }
   return count;
 }
@@ -267,6 +275,7 @@ vector<int> Board::possibleMoves(){
   return rows;
 }
 
+
 vector<int> Board::player_prof(unsigned int player){
   // lineas de mayor longitud que puede generar el jugador
 
@@ -274,7 +283,7 @@ vector<int> Board::player_prof(unsigned int player){
   vector<int> res(_cols,0);
   for (size_t i = 0; i < _cols; i++) {
     if(rows[i] != -1){
-      int m1 = max(horizonal(rows[i],i,player),vertical(rows[i],i,player));
+      int m1 = max(horizontal(rows[i],i,player),vertical(rows[i],i,player));
       int m2 = max(diagonalR(rows[i],i,player),diagonalL(rows[i],i,player));
       res[i] = max(m1,m2);
     }
@@ -283,72 +292,15 @@ vector<int> Board::player_prof(unsigned int player){
 }
 
 
+/****************************************************************************/
 
-
-
-
-
-
-unsigned int Board::linesOfSize(int n, int player){
-
-/* Calcula para un tablero dado la cantidad de lineas de
- * longitud *n* que formo el jugador *player*.
- *
- * Debe cumplirse: 0 < n < _c
- */
-
-
-  unsigned int count = 0;
-  // Chequear lineas horizontales
-  for(int i = 0; i < _rows; i++){
-      for(int j = 0; j < _cols - n + 1; j++){
-          bool same_player = true;
-          for(int k = 0; k < n; k++){
-              if(_board[i][j + k] != player){ same_player = false; }
-          }
-          /* Nos fijamos que la linea no forme parte de otra linea de mayor tamaño. */
-          //if(_board[i][j + n] == player) Learning to play Othello with n-tuple systems. Asame_player = false;
-          if(same_player) count++;
-      }
-  }
-
-  // Chequear lineas verticales
-  for(int i = 0; i < _rows - n + 1; i++){
-      for(int j = 0; j < _cols; j++){
-          bool same_player = true;
-          for(int k = 0; k < n; k++){
-              if(_board[i + k][j] != player){ same_player = false; }
-          }
-          /* Nos fijamos que la linea no forme parte de otra linea de mayor tamaño. */
-          //if(_board[i + n][j] == player) same_player = false;
-          if(same_player) count++;
-      }
-  }
-
-  // Chequear lineas diagonales (/)
-  for(int i = 0; i < _rows - n + 1; i++){
-      for(int j = 0; j < _cols - n + 1; j++){
-          bool same_player = true;
-          for(int k = 0; k < n; k++){
-              if(_board[i + k][j + k] != player){ same_player = false; }
-          }
-          /* Nos fijamos que la linea no forme parte de otra linea de mayor tamaño. */
-          //if(_board[i + n][j + n] == player) same_player = false;
-          if(same_player) count++;
-      }
-  }
-
-  // Chequear lineas diagonales (\)
-  for(int i = 0; i < _rows - n + 1; i++){
-      for(int j = 0; j < _cols - n + 1; j++){
-          bool same_player = true;
-          for(int k = 0; k < n; k++){
-              if(_board[i + k][_cols - (j + k) - 1] != player){ same_player = false; }
-          }
-          /* Nos fijamos que la linea no forme parte de otra linea de mayor tamaño. */
-          //if(_board[i + n][_cols - (j + n) - 1]  == player) same_player = false;
-          if(same_player) count++;
-      }
+vector<int> Board::columnsCount(unsigned int player){
+  vector<int> count(_cols);
+  for (size_t j = 0; j < _cols; j++) {
+    for (size_t i = 0; i < _rows; i++) {
+      if(_board[i][j] == player) count[j]++;
+      if(_board[i][j] == EMPTY) break;
+    }
   }
   return count;
 }
@@ -356,11 +308,113 @@ unsigned int Board::linesOfSize(int n, int player){
 
 
 
+/***************************************************************************/
+/***************************************************************************/
+/***************************************************************************/
+
+
+pair<int,int> Board::openHorizontal(int i, int j, int player){
+  /* Chequear lineas diagonales (\) */
+  int left = 0,right = 0;
+
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = j + k < _cols;
+    if( ok &&  _board[i][j + k] == player) right++;
+    else break;
+  }
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = 0 <= j-k;
+    if( ok &&  _board[i][j - k] == player) left++;
+    else break;
+  }
+  return make_pair(left,right);
+}
+
+
+pair<int,int> Board::openVertical(int i, int j, int player){
+  /* Chequear lineas verticales */
+  int up = 0, down = 0;
+
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = i + k < _rows;
+    if( ok &&  _board[i+k][j] == player) up++;
+    else break;
+  }
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = 0 <= i-k;
+    if( ok &&  _board[i-k][j] == player) down++;
+    else break;
+  }
+  return make_pair(up,down);
+}
+
+
+pair<int,int> Board::openDiagonalR(int i, int j, int player){
+  /* Chequear lineas diagonales(/) */
+  int up = 0, down = 0;
+
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = (j + k < _rows) && (i + k < _rows);
+    if( ok &&  _board[i + k][j + k] == player) up++;
+    else break;
+  }
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = (j - k > 0) && (i - k > 0);
+    if( ok &&  _board[i - k][j - k] == player) down++;
+    else break;
+  }
+  return make_pair(up,down);
+}
 
 
 
 
 
+pair<int,int> Board::openDiagonalL(int i, int j, int player){
+  /* Chequear lineas diagonales (\) */
+  int up = 0,down = 0;
+
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = (i+k < _rows) && (0 <= j-k);
+    if( ok &&  _board[i + k][j - k] == player) up++;
+    else break;
+  }
+  for (int k = 1; k <= _c ; k++) {
+    bool ok = (0 <= i-k) && ( j+k < _cols);
+    if( ok && _board[i-k][j+k] == player) down++;
+    else break;
+  }
+  return make_pair(up,down);
+}
+
+
+
+vector<int> Board::countOpen(unsigned int player){
+
+  vector<int> count(_c-2,0);
+
+  for (size_t i = 0; i < _rows; i++) {
+    for (size_t j = 0; j < _cols; j++) {
+      if(_board[i][j] == EMPTY){
+        pair<int,int> oH = openHorizontal(i,j,player);
+        if(oH.first > 2) count[oH.first-3]++;
+        if(oH.second > 2) count[oH.second-3]++;
+        pair<int,int> oV = openVertical(i,j,player);
+        if(oV.first > 2) count[oV.first-3]++;
+        if(oV.second > 2) count[oV.second-3]++;
+        pair<int,int> oDL = openDiagonalL(i,j,player);
+        if(oDL.first > 2) count[oDL.first-3]++;
+        if(oDL.second > 2) count[oDL.second-3]++;
+        pair<int,int> oDR = openDiagonalR(i,j,player);
+        if(oDR.first > 2) count[oDR.first-3]++;
+        if(oDR.second > 2) count[oDR.second-3]++;
+      }
+    }
+  }
+
+  return count;
+
+}
 
 
 

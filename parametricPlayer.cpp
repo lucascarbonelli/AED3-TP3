@@ -21,6 +21,19 @@ using namespace std;
 >>python c_linea.py --blue_player ./parametric_player 10 12 0 -100 1000 0 10 -100 1000 -10 50 10 1000 50 --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
 0 -100 1000 0 10 -100 1000 -10 50 10 1000 50
 
+
+>> python c_linea.py --blue_player ./parametric_player 10 6 0 5 1 -5 -5 1000000 --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
+>> python c_linea.py --blue_player ./parametric_player 10 6 0 5 5 5 -2 -5 1000000 --first azul --ui True --columns 3 --rows 3 --p 10 --c 3
+
+
+
+>> python c_linea.py --blue_player ./parametric_player 10 4 4 15 1000000 -10 --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
+
+//////
+>>  python c_linea.py --blue_player ./parametric_player 10 15 4 15 1000000 -10 0 1 2 3 2 1 0 5 10 -6 -11 --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
+
+
+
 */
 
 
@@ -60,7 +73,7 @@ std::string read_str() {
 /* Template de la funcion  */
 
 
-int scoreBoard(Board &b, int player, vector<int>& weights/*, ofstream& log*/){
+int scoreBoard(Board &b, int player, vector<int>& weights, ofstream& log){
 
   size_t feature = 0;
   int score = 0;
@@ -71,6 +84,7 @@ int scoreBoard(Board &b, int player, vector<int>& weights/*, ofstream& log*/){
     //log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
     score += weights[feature] * player_lines[i];
     feature++;
+    //log <<"Feature :"<< feature<< endl;
   }
 
   /* Perfiles  */
@@ -78,12 +92,40 @@ int scoreBoard(Board &b, int player, vector<int>& weights/*, ofstream& log*/){
   for (size_t i = 0; i < opponent_profile.size(); i++) {
     //log << "si el mueve a "<< i <<" "<< "puede hacer una linea de longitud "  << opponent_profile[i] << endl;
     score += weights[feature] * opponent_profile[i];
+    //log <<"Feature :"<< feature<< endl;
+  }
+  feature++;
+  //log <<"Feature :"<< feature<< endl;
+
+  /* fichas en columnas */
+  vector<int> player_col_count = b.columnsCount(PLAYER);
+  for (size_t i = 0; i < player_col_count.size(); i++) {
+    //log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
+    score += weights[feature] * player_col_count[i];
     feature++;
+    //log <<"Feature :"<< feature<< endl;
+  }
+
+  /* lineas abiertas del jugador */
+  vector<int> player_open_count = b.countOpen(PLAYER);
+  for (size_t i = 0; i < player_open_count.size(); i++) {
+    //log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
+    score += weights[feature] * player_open_count[i];
+    feature++;
+    //log <<"Feature :"<< feature<< endl;
+  }
+
+  /* lineas abiertas del oponente */
+  vector<int> opponent_open_count = b.countOpen(OPPONENT);
+  for (size_t i = 0; i < opponent_open_count.size(); i++) {
+    //log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
+    score += weights[feature] * opponent_open_count[i];
+    feature++;
+    //log <<"Feature :"<< feature<< endl;
   }
 
 
-  /* didIWin? */
-  score += weights[feature] * b.didIWin();
+
   return score;
 }
 
@@ -91,16 +133,22 @@ int scoreBoard(Board &b, int player, vector<int>& weights/*, ofstream& log*/){
 
 
 
-int generateAndScore(Board &b, int player,int c, vector<int>& weights/*, ofstream& log*/ ){
+int generateAndScore(Board &b, int player,int c, vector<int>& weights, ofstream& log ){
 
   int best_move = 0;
   int best_move_score = -INFINITY;
+
+  log << "------------------------------------------------------------------------"<< endl;
+
+  vector<int> player_lines = b.lineCounts(PLAYER);
+
+
 
   for (int col = 0; col < b.getColumns(); col++) {
     if( !b.isColFull(col) ){
       /* Miramos el tablero al agregar en la columna col */
       b.addPlayer(col);
-      int score = scoreBoard(b,player,weights);
+      int score = scoreBoard(b,player,weights,log);
 
       //log << "move: " << col << " score: " << score <<endl;
       if(score > best_move_score){
@@ -132,6 +180,8 @@ int main(int argc, const char* argv[]) {
       }
     }
 
+
+
     std::string msg, color, oponent_color, go_first;
     int columns, rows, c, p, move;
 
@@ -142,6 +192,13 @@ int main(int argc, const char* argv[]) {
     int won = 0, lost = 0, tied = 0;
     vector<int> loosing_time;
     vector<int> winning_time;
+
+    log << "Weights: " << endl;
+    for (size_t i = 0; i < weights.size(); i++) {
+      log << weights[i] << " ";
+    }
+    log << endl;
+
 
     while (true) {
         int t = 0;
@@ -160,7 +217,7 @@ int main(int argc, const char* argv[]) {
         go_first = read_str();
         if (go_first == "vos"){
           log << "started \n" << endl;
-          move = generateAndScore(board,PLAYER,c,weights);
+          move = generateAndScore(board,PLAYER,c,weights,log);
           //log << "move \n" << move <<  endl;
           board.addPlayer(move);
           send(move);
@@ -184,7 +241,8 @@ int main(int argc, const char* argv[]) {
             }
             //log << "mi turno " << endl;
             board.addOpponent(std::stoi(msg));
-            move = generateAndScore(board,PLAYER,c,weights);
+            log << "t: " << t << endl;
+            move = generateAndScore(board,PLAYER,c,weights,log);
             //log << "move \n" << move <<  endl;
             board.addPlayer(move);
             send(move);

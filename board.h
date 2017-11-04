@@ -22,7 +22,7 @@ public:
 
     /* Agregadas por nosotros: */
     void backtrack(int col);
-    int horizonal(int i, int j, int player);
+    int horizontal(int i, int j, int player);
     int vertical(int i, int j, int player);
     int diagonalR(int i, int j, int player);
     int diagonalL(int i, int j, int player);
@@ -30,6 +30,12 @@ public:
     unsigned int linesOfSize(int n, int player);
     vector<int> possibleMoves();
     vector<int> player_prof(unsigned int player);
+    vector<int> columnsCount(unsigned int player);
+    pair<int,int> openHorizontal(int i, int j, int player);
+    pair<int,int> openVertical(int i, int j, int player);
+    pair<int,int> openDiagonalR(int i, int j, int player);
+    pair<int,int> openDiagonalL(int i, int j, int player);
+    vector<int> countOpen(unsigned int player);
 
 private:
     std::vector<std::vector<int> > _board;
