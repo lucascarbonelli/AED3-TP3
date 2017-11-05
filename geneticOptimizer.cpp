@@ -9,6 +9,46 @@
 #include "genetic.cpp"
 
 
+
+float tester_against_random(vector<int> weights, int matches, int rows , int columns, int c, int p, ofstream& log){
+
+  /* Seteamos parametros */
+  string cmd = "python2 c_linea.py --blue_player ./parametric_player ";
+  cmd += " " + to_string(matches); /* cantidad de iteraciones */
+  cmd += " " + to_string(weights.size()); /* cantidad de parametros */
+
+  for (int i = 0; i < weights.size(); ++i){
+    cmd += " " + to_string(weights[i]);
+  }
+
+  cmd += " --red_player ./random_player";
+  cmd += " --iterations " + to_string(matches);
+  cmd += " --first azul --columns "+to_string(columns)+" --rows "+to_string(rows)+" --p "+to_string(p)+" --c "+to_string(c)+" ";
+
+  /* Corremos el juego que dejara los resultados en res.txt*/
+  system(cmd.c_str());
+  ifstream res("azul.txt");
+  int won,lost,tied, median_l_time, median_w_time;
+  res >> won;
+  res >> lost;
+  res >> tied;
+  res >> median_w_time;
+  res >> median_l_time;
+  //cout << "Ganados: "<< won << " | " << "Perdidos: " << lost << " | " << "Empatados: " << tied <<endl;
+  //cout << "median_w_time: " << median_w_time << " | " << "median_l_time: " << median_l_time << endl;
+
+  float score = won/median_w_time - lost/median_l_time;
+  log << endl;
+  log << "Score: " << score << endl;
+  log << "Won " << won << " times."<< endl;
+  log << "Lost " << lost << " times."<< endl;
+  log << "Tied " << tied << " times."<< endl;
+  return score;
+
+}
+
+
+
 int main(int argc, const char* argv[]) {
 
   if (argc < 2)
@@ -27,14 +67,13 @@ int main(int argc, const char* argv[]) {
   if(algorithm == "helix"){
 
     //Ejemplo de ejecución:
-    //./geneticOptimizer helix 5 5 4 60 true 10 20 100 3 30 20 2 10000 2 ./gen_hel_res.txt ./gen_hel_err.txt
+    //./geneticOptimizer helix 5 5 4 60 1 10 20 100 3 30 20 2 10000 2 1 1000 ./gen_hel_res.txt ./gen_hel_err.txt
 
     int m = atoi(argv[2]);
     int n = atoi(argv[3]);
     int c = atoi(argv[4]);
     int p = atoi(argv[5]);
-    bool w1_first = false;
-    if(argv[6] == "true") w1_first = true;
+    int w1_first = atoi(argv[6]);
     int pop_size = atoi(argv[8]);
     int pop_max_rnd = atoi(argv[9]);
     int best_ones_quant = atoi(argv[10]);
@@ -44,10 +83,12 @@ int main(int argc, const char* argv[]) {
     int cross_fraction = atoi(argv[13]);
     int probMut = atoi(argv[14]);
     int maxMutMod = atoi(argv[15]);
+    int test = atoi(argv[16]);
+    int matches = atoi(argv[17]);
 
 
-    string filepath_results = argv[16];
-    string filepath_logerror = argv[17];
+    string filepath_results = argv[18];
+    string filepath_logerror = argv[19];
 
     ofstream log_hel_err(filepath_logerror);
   
@@ -102,6 +143,10 @@ int main(int argc, const char* argv[]) {
     string file_res = filepath_results /*+ encode*/; 
     ofstream log_hel_res(file_res);
     vectorPrinter(best_ones, log_hel_res);
+
+    if(test){
+      tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.c, log_hel_res);
+    }
 
   }
 
