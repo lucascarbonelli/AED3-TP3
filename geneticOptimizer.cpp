@@ -11,7 +11,7 @@
 
 
 
-float tester_against_random(vector<int> weights, int matches, int rows , int columns, int c, int p, ofstream& log){
+pair<float, matchResults> tester_against_random(vector<int> weights, int matches, int rows , int columns, int c, int p, ofstream& log){
 
   /* Seteamos parametros */
   string cmd = "python2 c_linea.py --blue_player ./parametric_player ";
@@ -35,8 +35,13 @@ float tester_against_random(vector<int> weights, int matches, int rows , int col
   res >> tied;
   res >> median_w_time;
   res >> median_l_time;
-  //cout << "Ganados: "<< won << " | " << "Perdidos: " << lost << " | " << "Empatados: " << tied <<endl;
-  //cout << "median_w_time: " << median_w_time << " | " << "median_l_time: " << median_l_time << endl;
+
+  matchResults match;
+  match.won = won;
+  match.lost = lost;
+  match.tied = tied;
+  match.median_w_time = median_w_time;
+  match.median_l_time = median_l_time;
 
   float score = won/median_w_time - lost/median_l_time;
   log << endl;
@@ -44,8 +49,8 @@ float tester_against_random(vector<int> weights, int matches, int rows , int col
   log << "Won " << won << " times."<< endl;
   log << "Lost " << lost << " times."<< endl;
   log << "Tied " << tied << " times."<< endl;
-  return score;
-
+  
+  return make_pair(score, match);
 }
 
 
@@ -156,7 +161,6 @@ int main(int argc, const char* argv[]) {
 
     string file_res = filepath_results /*+ encode*/; 
     ofstream log_hel_res(file_res);
-    int score;
 
     //quizá cambiar esto por switch
     if(outputMode == 1){
@@ -170,14 +174,16 @@ int main(int argc, const char* argv[]) {
     }
     if(outputMode == 3){
       //medidor general de tiempos y scores
-      ofstream res_weights;
-      res_weights.open(filepath_logtests, std::ios::in | std::ios::out | std::ios::ate);
+      ofstream res_tests;
+      res_tests.open(filepath_logtests, std::ios::in | std::ios::out | std::ios::ate);
 
-      score = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.c, log_hel_res);
+      pair<float, matchResults> scoreAndMatch;
+
+      scoreAndMatch = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.c, log_hel_res);
       
-      res_weights << endl;
-      miniVectorPrinter(best_ones[0], res_weights);
-      res_weights << "," << score << "," << pop_size << "," << pop_max_rnd << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << iter << "," << time_span.count();
+      res_tests << endl;
+      miniVectorPrinter(best_ones[0], res_tests);
+      res_tests << "," << scoreAndMatch.first << "," << scoreAndMatch.second.won << "," << scoreAndMatch.second.lost << "," << scoreAndMatch.second.tied << "," << scoreAndMatch.second.median_w_time << "," << scoreAndMatch.second.median_l_time << pop_size << "," << pop_max_rnd << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << iter << "," << type << "," << "," << m << "," << n << "," << c << "," << p << "," << time_span.count();
 
     }
 

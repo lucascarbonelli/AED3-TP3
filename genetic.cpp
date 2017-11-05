@@ -331,7 +331,7 @@ void vectorPrinter(vector<vector<int> >& v, ofstream& log){
 void miniVectorPrinter(vector<int>& v, ofstream& log){
   log << "{";
   for (int i = 0; i < v.size()-1; ++i){
-    log << v[i] << ", ";
+    log << v[i] << ",";
   }
   log << v[v.size()-1] << "}";
 }
