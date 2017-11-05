@@ -6,6 +6,9 @@ all: minimax_player random_player minimax_alpha_beta_player parametric_player op
 geneticJuab:
 	g++ -std=c++11 geneticJuab.cpp -o geneticJuab
 
+geneticPate:
+	g++ -std=c++11 geneticPate.cpp -o geneticPate
+
 optimizer:
 	g++ -std=c++11 optimizer.cpp -o optimizer
 
