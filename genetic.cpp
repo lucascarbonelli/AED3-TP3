@@ -150,7 +150,8 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
   }
 
   //reproducimos los viejos mejores con los mejores globales
-  vector<individual> new_generation = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross, log);
+  //vector<individual> new_generation = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross, log);
+  vector<individual> new_generation = breed_helix(old_better_ones, params.quantInd_a_Cross, log);
 
   //los juntamos en new population
   new_population.clear();
@@ -221,6 +222,18 @@ vector<individual> breed_twopops(vector<individual>& population_a, vector<indivi
   return res;
 }
 
+vector<individual> breed_helix(vector<individual>& population, int quantInd_a, ofstream& log){
+  vector<individual> res;
+  vector<individual> population_copy = population;
+  
+  random_shuffle(population_copy.begin(), population_copy.end());
+
+  for (int i = 0; i < population.size(); ++i){
+    res.push_back(crossover(population[i], population_copy[i], quantInd_a, log));
+  }
+
+  return res;
+}
 
 /*---------------------------------------Selection y fitness Paté------------------------------------------*/
 /*

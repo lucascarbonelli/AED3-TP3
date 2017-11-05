@@ -2,7 +2,7 @@
 #include <fstream>
 #include <stdlib.h>   //rand
 #include <utility>    //pair
-#include <algorithm>  //sort
+#include <algorithm>  //sort, random_shuffle
 #include <math.h> 	  //floor
 #include <stdlib.h>   //system
 #include <string>
@@ -55,6 +55,7 @@ vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<indi
 void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores);
 int score_helix(matchResults match);
 vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a, ofstream& log);
+vector<individual> breed_helix(vector<individual>& population, int quantInd_a, ofstream& log);
 
 
 //Paté
