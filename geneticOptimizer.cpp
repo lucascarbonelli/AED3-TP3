@@ -26,6 +26,9 @@ int main(int argc, const char* argv[]) {
 
   if(algorithm == "helix"){
 
+    //Ejemplo de ejecución:
+    //./geneticOptimizer helix 5 5 4 60 true 10 20 100 3 30 20 2 10000 2 ./gen_hel_res.txt ./gen_hel_err.txt
+
     int m = atoi(argv[2]);
     int n = atoi(argv[3]);
     int c = atoi(argv[4]);
@@ -38,13 +41,15 @@ int main(int argc, const char* argv[]) {
     int iter = atoi(argv[7]);
     int news_porc = atoi(argv[11]);
     int breeds_porc = atoi(argv[12]);
-    int probMut = atoi(argv[13]);
-    int maxMutMod = atoi(argv[14]);
+    int cross_fraction = atoi(argv[13]);
+    int probMut = atoi(argv[14]);
+    int maxMutMod = atoi(argv[15]);
 
-    string filepath_results = argv[15];
-    string filepath_logerror = argv[16];
 
-    ofstream log(filepath_logerror);
+    string filepath_results = argv[16];
+    string filepath_logerror = argv[17];
+
+    ofstream log_hel_err(filepath_logerror);
   
     matchBoard board;
     board.m = m;
@@ -57,28 +62,28 @@ int main(int argc, const char* argv[]) {
     init_rnd_population(population, pop_max_rnd);
 
     vector<individual> best_ones(best_ones_quant);
-    get_fittest_helix(board, best_ones, population, iter, log);
+    get_fittest_helix(board, best_ones, population, iter, log_hel_err);
   
     paramsGen params;
     params.news = porcentage(population.size(), news_porc);
     params.breeds = porcentage(population.size(), breeds_porc);
     params.iter = iter;
-    params.quantInd_a_Cross = floor((params.news+params.breeds)/2);
+    params.quantInd_a_Cross = floor((params.news+params.breeds)/cross_fraction);
     params.probMut = probMut;
     params.maxMut = mean(population, maxMutMod);
   
     vector<individual> new_population(params.news+params.breeds, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
   
-    while(new_population.size() > 3){
+    while(new_population.size() > 2){
       //corro la genetica
-      helix(board, population, new_population, params, log);
+      helix(board, population, new_population, params, log_hel_err);
   
       //population es new population, y new population se vacía y achica
       population.clear();
       population = new_population;
       new_population.clear();
-      params.news = porcentage(population.size(), 30);
-      params.breeds = porcentage(population.size(), 20);
+      params.news = porcentage(population.size(), news_porc);
+      params.breeds = porcentage(population.size(), breeds_porc);
       new_population.resize(params.news+params.breeds);
       for (int i = 0; i < new_population.size(); ++i){
         individual new_individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2);
@@ -91,20 +96,20 @@ int main(int argc, const char* argv[]) {
       all_individuals.push_back(best_ones[1]);
       all_individuals.push_back(best_ones[2]);
   
-      get_fittest_helix(board, best_ones, all_individuals, 10, log);   
-      
-      string file_res = filepath_results /*+ encode*/; 
-      ofstream logRes(file_res);
-      vectorPrinter(best_ones, logRes);
- 
-    }
-
-
-    if(algorithm == "pate"){
-      //ALGORITMO PATE
+      get_fittest_helix(board, best_ones, all_individuals, iter, log_hel_err);   
 
     }
-  
+    string file_res = filepath_results /*+ encode*/; 
+    ofstream log_hel_res(file_res);
+    vectorPrinter(best_ones, log_hel_res);
+
   }
+
+  if(algorithm == "pate"){
+    //ALGORITMO PATE
+
+  }
+  
+
   return 0;
 }

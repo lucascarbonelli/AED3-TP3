@@ -129,12 +129,7 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
   vector<individual> better_ones(params.breeds);
   vector<pair<int, unsigned int> > scores = get_fittest_helix(board, better_ones, population, params.iter, log);
 
-  //nos guardamos los viejos de la población (los no new)
-  vector<individual> old_population;
-  for (int i = 0; i < population.size()-params.news; ++i){
-    old_population.push_back(population[i]);
-  }
-  //buscamos sus #breeds mejores
+  //buscamos sus #breeds mejores que no sean los #breeds mejores de better ones
   vector<individual> old_better_ones;
   for (int i = better_ones.size()+1; i < params.breeds; ++i){
     old_better_ones.push_back(population[scores[scores.size()-1-i].second]);
