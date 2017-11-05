@@ -3,6 +3,9 @@ FLAGS= -std=c++11 -g -Wall
 
 all: minimax_player random_player minimax_alpha_beta_player parametric_player optimizer geneticOptimizer
 
+geneticJuab:
+	g++ -std=c++11 geneticJuab.cpp -o geneticJuab
+
 optimizer:
 	g++ -std=c++11 optimizer.cpp -o optimizer
 

@@ -14,12 +14,12 @@ def main(args):
 
     assert args.c <= args.columns and args.c <= args. rows
 
-    print "----- Parámetros -----"
-    print "columnas: \t", args.columns
-    print "filas: \t\t", args.rows
-    print "c: \t\t", args.c
-    print "p: \t\t", args.p
-    print "----------------------"
+    #print "----- Parámetros -----"
+    #print "columnas: \t", args.columns
+    #print "filas: \t\t", args.rows
+    #print "c: \t\t", args.c
+    #print "p: \t\t", args.p
+    #print "----------------------"
 
     if args.blue_player is None:
         blue_player = HumanPlayer(BLUE)
