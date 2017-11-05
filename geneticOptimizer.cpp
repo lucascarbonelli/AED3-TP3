@@ -68,7 +68,7 @@ int main(int argc, const char* argv[]) {
   if(algorithm == "helix"){
 
     //Ejemplo de ejecución (el null está por la salida de python):
-    //./geneticOptimizer helix 7 6 4 60 1 5 20 100 3 30 20 2 10000 2 1 1000 ./gen_hel_res.txt ./gen_hel_err.txt > /dev/null
+    //./geneticOptimizer helix 7 6 4 60 1 5 20 100 3 30 20 2 10000 2 3 1000 ./gen_hel_res ./gen_hel_err ./gen_hel_test > /dev/null
 
     int m = atoi(argv[2]);
     int n = atoi(argv[3]);
@@ -84,12 +84,13 @@ int main(int argc, const char* argv[]) {
     int cross_fraction = atoi(argv[13]);
     int probMut = atoi(argv[14]);
     int maxMutMod = atoi(argv[15]);
-    int test = atoi(argv[16]);
+    int outputMode = atoi(argv[16]);
     int matches = atoi(argv[17]);
 
 
     string filepath_results = argv[18];
     string filepath_logerror = argv[19];
+    string filepath_logtests = argv[20];
 
     ofstream log_hel_err(filepath_logerror);
   
@@ -110,7 +111,7 @@ int main(int argc, const char* argv[]) {
     params.news = porcentage(population.size(), news_porc);
     params.breeds = porcentage(population.size(), breeds_porc);
     params.iter = iter;
-    params.quantInd_a_Cross = floor((params.news+params.breeds)/cross_fraction);
+    params.quantInd_a_Cross = floor((board.c-1 + 1 + board.m + board.c-2 + board.c-2)/2);
     params.probMut = probMut;
     params.maxMut = pop_max_rnd*maxMutMod;
   
@@ -118,6 +119,11 @@ int main(int argc, const char* argv[]) {
     
     srand(time(0));
 
+    std::chrono::high_resolution_clock::time_point t1;
+    std::chrono::high_resolution_clock::time_point t2;
+    std::chrono::duration<double> time_span;
+
+    t1 = now();
     while(new_population.size() > 2){
       //corro la genetica
       helix(board, population, new_population, params, log_hel_err);
@@ -143,28 +149,33 @@ int main(int argc, const char* argv[]) {
       get_fittest_helix(board, best_ones, all_individuals, iter, log_hel_err);
 
     }
+    t2 = now();
+    time_span = std::chrono::duration_cast<std::chrono::duration<double> >(t2-t1);
+
     string file_res = filepath_results /*+ encode*/; 
     ofstream log_hel_res(file_res);
     int score;
 
-    if(test){
+    //quizá cambiar esto por switch
+    if(outputMode == 1){
+      //imprimir score del mejor contra random
       miniVectorPrinter(best_ones[0], log_hel_res);
       tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.c, log_hel_res);
     }
-    if(!test){
+    if(outputMode == 2){
+      //imprimir todos los mejores
       vectorPrinter(best_ones, log_hel_res);
     }
-
-    //capacidad oculta
-    if(test == 3){
+    if(outputMode == 3){
+      //medidor general de tiempos y scores
       ofstream res_weights;
-      res_weights.open("gen_hel_weights.txt", std::ios::in | std::ios::out | std::ios::ate);
+      res_weights.open(filepath_logtests, std::ios::in | std::ios::out | std::ios::ate);
 
       score = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.c, log_hel_res);
       
       res_weights << endl;
       miniVectorPrinter(best_ones[0], res_weights);
-      res_weights << "," << score << "," << pop_size << "," << pop_max_rnd << "," << best_ones_quant << "," << news_porc << "," << breeds_porc;
+      res_weights << "," << score << "," << pop_size << "," << pop_max_rnd << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << iter << "," << time_span.count();
 
     }
 

@@ -7,6 +7,9 @@
 #include <stdlib.h>   //system
 #include <string>
 #include <vector>
+#include <chrono>     //medir tiempos
+
+#define now std::chrono::high_resolution_clock::now
 
 using namespace std;
 
