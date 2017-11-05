@@ -96,7 +96,7 @@ int main(int argc, const char* argv[]) {
       all_individuals.push_back(best_ones[1]);
       all_individuals.push_back(best_ones[2]);
   
-      get_fittest_helix(board, best_ones, all_individuals, iter, log_hel_err);   
+      get_fittest_helix(board, best_ones, all_individuals, iter, log_hel_err);
 
     }
     string file_res = filepath_results /*+ encode*/; 
