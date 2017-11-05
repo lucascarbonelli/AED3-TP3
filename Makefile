@@ -31,4 +31,4 @@ random_player:
 	$(CPP) $(FLAGS) -c -o $@ $<
 
 clean:
-	rm -f minimax_player minimax_alpha_beta_player random_player optimizer geneticOptimizer *.o *~
+	rm -f minimax_player minimax_alpha_beta_player random_player optimizer geneticOptimizer geneticPate *.o *~

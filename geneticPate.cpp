@@ -32,6 +32,48 @@ struct matchResults{
   int indexPop; //indice en vector<individual> population, si usamos tournament
 };
 
+void uIntFloatPairPrinter(vector<pair<unsigned int,float> > v){
+  cout << "size: " << v.size()<< ", ";
+  cout << "{";
+  for (int i = 0; i < v.size()-1; ++i)
+  {
+    cout << "(" << v[i].first <<"-"<< v[i].second<<")" << "," ;
+  }
+  cout <<"(" << v[v.size()-1].first <<"-"<< v[v.size()-1].second << ")" << "}"<< endl;
+  return;
+}
+
+void popPrinter(vector<individual>& v){
+  cout << "{";
+  for (int i = 0; i < v.size()-1; ++i){
+    cout << " {";
+    for (int j = 0; j < v[i].size()-1; ++j){
+      cout << v[i][j] << ", ";
+    }
+    cout << v[i][v[i].size()-1] << "}, ";
+  }
+
+  cout << " {";
+  for (int j = 0; j < v[v.size()-1].size()-1; ++j){
+    cout << v[v.size()-1][j] << ", ";
+  }
+  cout << v[v.size()-1][v[v.size()-1].size()-1] << "} }";
+}
+
+
+
+void uIntVectorPrinter(vector<unsigned int>& v){
+  cout << "size: " << v.size()<< ", ";
+  cout << "{";
+  for (int i = 0; i < v.size()-1; ++i)
+  {
+    cout << v[i] << "," ;
+  }
+  cout << v[v.size()-1] << "}" <<endl;
+  return;
+}
+
+
 float fitness(vector<int> weights, int iter, int rows , int columns, int c, int p){
 
 	/* Seteamos parametros */
@@ -161,19 +203,21 @@ vector<pair<unsigned int,float > > tournament(matchBoard board, vector<individua
   for (int i = 0; i < population.size(); ++i){
     for (int j = i+1; j < population.size(); ++j){
       pair<matchResults,matchResults> matchRes = match(population[i], population[j], i, j, iter, board);
-      scores[i].second.first += matchRes.first.lost;
+      scores[i].second.first += matchRes.first.won;
       scores[i].second.second += matchRes.first.lost + matchRes.first.won + matchRes.first.tied;
-      scores[j].second.first += matchRes.first.lost;
-      scores[j].second.second += matchRes.first.lost + matchRes.first.won + matchRes.first.tied;
+      scores[j].second.first += matchRes.first.won;
+      scores[j].second.second += matchRes.second.lost + matchRes.second.won + matchRes.second.tied;
       
     }
 
 
   }
   vector<pair<unsigned int,float> > res;
-  for (size_t i = 0; i < population.size(); i++) {
-    float rank = (scores[i].second.first)/(scores[i].second.second);
-    res.push_back(make_pair(i,rank));
+  for (size_t i = 0; i < scores.size(); i++) {
+    //cout << scores[i].second.first << " ---- " << scores[i].second.second << endl;;
+    float rank = float(scores[i].second.first)/float(scores[i].second.second);
+
+    res.push_back(make_pair(i,rank*100));
   }
 
   return res;
@@ -185,7 +229,7 @@ bool matchCompare(const pair<unsigned int,float>& firstElem, const pair<unsigned
 
 
 
-float rank_population(vector<pair<unsigned int,float> >& scores, vector<unsigned int> ranking){
+float rank_population(vector<pair<unsigned int,float> >& scores, vector<unsigned int>& ranking){
   sort(scores.begin(), scores.end(), matchCompare);
   for (size_t i = 0; i < scores.size(); i++) {
     ranking.push_back(scores[i].first);
@@ -236,12 +280,15 @@ vector<individual> new_generation(vector<unsigned int>& ranking, vector<individu
 
   vector<individual> new_population;
   // Replico los n**1/2 mejores individuos
+  cout  << "NUEVA GEN" << endl;
+
   for (int i = 0; i < floor(sqrt(population_size)); ++i){
     individual sqrt_best = population[ranking[i]];
     mutate(sqrt_best);
     new_population.push_back(sqrt_best);
   }
-  //cout  << "NUEVA GEN" << endl;
+
+
   while(new_population.size() < population_size ){
     pair<unsigned int,unsigned int> parents = select(ranking,population);
     //cout << "cogiendo..." << endl;
@@ -258,16 +305,18 @@ vector<individual> new_generation(vector<unsigned int>& ranking, vector<individu
 
 
 
-vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int max_generations, unsigned int max, unsigned int iter, float benchmark){
+vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int max_generations, unsigned int max, unsigned int iter, float benchmark, int min_gen){
 
   int generation = 0;
 
   vector<individual> population(pop_size,individual(ind_size));
+  srand(time(0));
   init_rnd_population(population,max);
+  //popPrinter(population);
   cout << "Genero poblacion inicial" << endl;;
   //// Itero hasta superar mi benchmark
-  float best_ind = 100000;
-  while(generation < max_generations && best_ind > benchmark){
+  float best_ind = 0;
+  while(min_gen > generation || generation < max_generations && best_ind < benchmark){
     cout << "Generation: " << generation << endl;
     // Calculo el mejor fitness de la poblacion y los ordeno
     //Esto deberia ordenar la poblacion  de mejor a peor fitness
@@ -275,8 +324,10 @@ vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size,
     cout << "Compitiendo..." << endl;
     vector<pair<unsigned int,float> > fitness = tournament(board,population,iter);
     cout << "Rankeando..." << endl;
+    //uIntFloatPairPrinter(fitness);
     vector<unsigned int> ranking;
     best_ind = rank_population(fitness,ranking);
+    //uIntVectorPrinter(ranking);
     cout << "Bredeando..." << endl;
     population = new_generation(ranking,population,population.size());
     generation++;
@@ -296,8 +347,9 @@ int main(){
   board.c = 4;
   board.p = 21;
   board.w1_first = true;
-  int iter = 3;
-  vector<individual> population = genetic_optimization(board,10,15,20,100,iter,0.05);
+  int iter = 1;
+  int min_gen = 20;
+  vector<individual> population = genetic_optimization(board,25,15,20,100,iter,99,min_gen);
 
   /*for (size_t i = 0; i < population.size(); i++) {
     cout << "Weights: " << endl;
