@@ -68,7 +68,7 @@ int main(int argc, const char* argv[]) {
   if(algorithm == "helix"){
 
     //Ejemplo de ejecución (el null está por la salida de python):
-    //./geneticOptimizer helix 7 6 4 60 1 5 20 100 3 30 20 2 10000 2 3 1000 ./gen_hel_res ./gen_hel_err ./gen_hel_test > /dev/null
+    //./geneticOptimizer helix 7 6 4 60 1 5 20 100 3 30 20 2 10000 2 1 3 1000 ./gen_hel_res ./gen_hel_err ./gen_hel_test > /dev/null
 
     int m = atoi(argv[2]);
     int n = atoi(argv[3]);
@@ -84,13 +84,14 @@ int main(int argc, const char* argv[]) {
     int cross_fraction = atoi(argv[13]);
     int probMut = atoi(argv[14]);
     int maxMutMod = atoi(argv[15]);
-    int outputMode = atoi(argv[16]);
-    int matches = atoi(argv[17]);
+    int type = atoi(argv[16]);
+    int outputMode = atoi(argv[17]);
+    int matches = atoi(argv[18]);
 
 
-    string filepath_results = argv[18];
-    string filepath_logerror = argv[19];
-    string filepath_logtests = argv[20];
+    string filepath_results = argv[19];
+    string filepath_logerror = argv[20];
+    string filepath_logtests = argv[21];
 
     ofstream log_hel_err(filepath_logerror);
   
@@ -105,7 +106,7 @@ int main(int argc, const char* argv[]) {
     init_rnd_population(population, pop_max_rnd);
 
     vector<individual> best_ones(best_ones_quant);
-    get_fittest_helix(board, best_ones, population, iter, log_hel_err);
+    get_fittest_helix(board, best_ones, population, iter, type, log_hel_err);
   
     paramsGen params;
     params.news = porcentage(population.size(), news_porc);
@@ -114,6 +115,7 @@ int main(int argc, const char* argv[]) {
     params.quantInd_a_Cross = floor((board.c-1 + 1 + board.m + board.c-2 + board.c-2)/2);
     params.probMut = probMut;
     params.maxMut = pop_max_rnd*maxMutMod;
+    params.typeScore = type;
   
     vector<individual> new_population(params.news+params.breeds, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
     
@@ -146,7 +148,7 @@ int main(int argc, const char* argv[]) {
       all_individuals.push_back(best_ones[1]);
       all_individuals.push_back(best_ones[2]);
   
-      get_fittest_helix(board, best_ones, all_individuals, iter, log_hel_err);
+      get_fittest_helix(board, best_ones, all_individuals, iter, type, log_hel_err);
 
     }
     t2 = now();

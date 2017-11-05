@@ -129,7 +129,7 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log){
   //tomamos #breeds better ones
   vector<individual> better_ones(params.breeds);
-  vector<pair<int, unsigned int> > scores = get_fittest_helix(board, better_ones, population, params.iter, log);
+  vector<pair<int, unsigned int> > scores = get_fittest_helix(board, better_ones, population, params.iter, params.typeScore, log);
 
 /*  //nos guardamos los viejos de la población (los no new)
   vector<individual> old_population;
@@ -168,7 +168,7 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
 }
 
 
-vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual>& fittest, vector<individual>& population, int iter, ofstream& log){
+vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual>& fittest, vector<individual>& population, int iter, int type, ofstream& log){
 
   //first es score y second es indice del individuo en population
   vector<pair<int, unsigned int> > scores(population.size());
@@ -177,7 +177,7 @@ vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<indi
   //rankeamos a cada individuo
   vector<pair<matchResults,matchResults> > fixture = tournament(board, population, iter);
 
-  fitness_population_helix(fixture, scores);
+  fitness_population_helix(fixture, scores, type);
 
   //los ordeno con pairCompare
   sort(scores.begin(), scores.end(), pairCompare);
@@ -192,20 +192,22 @@ vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<indi
 }
 
 
-void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores){
+void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores, int type){
 
     for (int i = 0; i < tournament_results.size(); ++i){
-      scores[tournament_results[i].first.indexPop].first = scores[tournament_results[i].first.indexPop].first + score_helix(tournament_results[i].first);
+      scores[tournament_results[i].first.indexPop].first = scores[tournament_results[i].first.indexPop].first + score_helix(tournament_results[i].first, type);
       scores[tournament_results[i].first.indexPop].second = tournament_results[i].first.indexPop;
-      scores[tournament_results[i].second.indexPop].first = scores[tournament_results[i].second.indexPop].first + score_helix(tournament_results[i].second);
+      scores[tournament_results[i].second.indexPop].first = scores[tournament_results[i].second.indexPop].first + score_helix(tournament_results[i].second, type);
       scores[tournament_results[i].second.indexPop].second = tournament_results[i].second.indexPop;
     }
 }
 
-int score_helix(matchResults match){
-  return match.won - match.lost + match.tied;
-  //return match.won + match.tied + match.median_l_time - match.lost*2;
-  //return match.won/match.median_l_time - match.lost/match.median_w_time;
+int score_helix(matchResults match, int type){
+  if(type == 1) return match.won - match.lost + match.tied;
+  if(type == 2) return match.won + match.tied + match.median_l_time - match.lost*2;
+  if(type == 3) return match.won + match.tied + match.median_l_time/2 - match.lost;
+  if(type == 4) return match.won/match.median_l_time - match.lost/match.median_w_time;
+  if(type == 5) return match.won/match.median_w_time - match.lost/match.median_l_time;
 }
 
 
