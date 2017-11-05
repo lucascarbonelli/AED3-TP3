@@ -127,7 +127,7 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log){
   //tomamos #breeds better ones
   vector<individual> better_ones(params.breeds);
-  get_fittest_helix(board, better_ones, population, params.iter, log);
+  vector<pair<int, unsigned int> > scores = get_fittest_helix(board, better_ones, population, params.iter, log);
 
   //nos guardamos los viejos de la población (los no new)
   vector<individual> old_population;
@@ -135,8 +135,10 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
     old_population.push_back(population[i]);
   }
   //buscamos sus #breeds mejores
-  vector<individual> old_better_ones(params.breeds);
-  get_fittest_helix(board, old_better_ones, old_population, params.iter, log);
+  vector<individual> old_better_ones;
+  for (int i = better_ones.size()+1; i < params.breeds; ++i){
+    old_better_ones.push_back(population[scores[scores.size()-1-i].second]);
+  }
 
   //reproducimos los viejos mejores con los mejores globales
   vector<individual> new_generation = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross, log);
@@ -254,41 +256,6 @@ void new_generation(vector<individual>& pop){
 
 
 /*---------------------------------------Auxiliares------------------------------------------*/
-
-/*
-//Formato de salida:
-//               T·.·_C·_P·/_I·_F·
-//Donde en cada punto hay un numero, y la barra es por directorio, y las siglas son:
-// T: tamaño del tablero (filas.columnas)
-// C: c-linea
-// P: cantidad de fichas máxima
-// I: cantidad de individuos en la población
-// F: cantidad de features
-void save_population(vector<individual> population, int n, int m, int c, int p){
-
-  string finalpath = "T" + to_string(n)+"."+to_string(m)+"_C"+to_string(c)+"_P"+to_string(p);
-  if (mkdir(finalpath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == -1){
-    //está parte de abajo quizá sea útil...
-    /*if( errno == EEXIST ){
-        //alredy exists
-    } else {
-        //something else
-        std::cout << "cannot create sessionnamefolder error:" << strerror(errno) << std::endl;
-        throw std::runtime_exception( strerror(errno) );
-      }
-    }//
-  }
-
-  string f_name = "training/"+finalpath+"/"+"_I"+to_string(population.size())+"_F"+to_string(population[0].size());
-  ofstream file(f_name);
-
-  for (size_t i = 0; i < population.size(); i++) {
-    for (size_t j = 0; j < population[i].size(); j++) {
-      f_name << population[i][j] << " ";
-    }
-    f_name << endl;
-  }
-}*/
 
 
 bool pairCompare(const pair<int, unsigned int>& firstElem, const pair<int, unsigned int>& secondElem){
