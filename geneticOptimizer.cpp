@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <random>
+#include <time.h>
 #include <cstdlib>
 #include <vector>
 #include <stdio.h>
@@ -66,18 +67,18 @@ int main(int argc, const char* argv[]) {
 
   if(algorithm == "helix"){
 
-    //Ejemplo de ejecución:
-    //./geneticOptimizer helix 5 5 4 60 1 10 20 100 3 30 20 2 10000 2 1 1000 ./gen_hel_res.txt ./gen_hel_err.txt
+    //Ejemplo de ejecución (el null está por la salida de python):
+    //./geneticOptimizer helix 7 6 4 60 1 5 20 100 3 30 20 2 10000 2 1 1000 ./gen_hel_res.txt ./gen_hel_err.txt > /dev/null
 
     int m = atoi(argv[2]);
     int n = atoi(argv[3]);
     int c = atoi(argv[4]);
     int p = atoi(argv[5]);
     int w1_first = atoi(argv[6]);
+    int iter = atoi(argv[7]);
     int pop_size = atoi(argv[8]);
     int pop_max_rnd = atoi(argv[9]);
     int best_ones_quant = atoi(argv[10]);
-    int iter = atoi(argv[7]);
     int news_porc = atoi(argv[11]);
     int breeds_porc = atoi(argv[12]);
     int cross_fraction = atoi(argv[13]);
@@ -111,10 +112,12 @@ int main(int argc, const char* argv[]) {
     params.iter = iter;
     params.quantInd_a_Cross = floor((params.news+params.breeds)/cross_fraction);
     params.probMut = probMut;
-    params.maxMut = mean(population, maxMutMod);
+    params.maxMut = pop_max_rnd*maxMutMod;
   
     vector<individual> new_population(params.news+params.breeds, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
-  
+    
+    srand(time(0));
+
     while(new_population.size() > 2){
       //corro la genetica
       helix(board, population, new_population, params, log_hel_err);
@@ -142,10 +145,27 @@ int main(int argc, const char* argv[]) {
     }
     string file_res = filepath_results /*+ encode*/; 
     ofstream log_hel_res(file_res);
-    vectorPrinter(best_ones, log_hel_res);
+    int score;
 
     if(test){
+      miniVectorPrinter(best_ones[0], log_hel_res);
       tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.c, log_hel_res);
+    }
+    if(!test){
+      vectorPrinter(best_ones, log_hel_res);
+    }
+
+    //capacidad oculta
+    if(test == 3){
+      ofstream res_weights;
+      res_weights.open("gen_hel_weights.txt", std::ios::in | std::ios::out | std::ios::ate);
+
+      score = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.c, log_hel_res);
+      
+      res_weights << endl;
+      miniVectorPrinter(best_ones[0], res_weights);
+      res_weights << "," << score << "," << pop_size << "," << pop_max_rnd << "," << best_ones_quant << "," << news_porc << "," << breeds_porc;
+
     }
 
   }

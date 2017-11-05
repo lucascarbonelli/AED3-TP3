@@ -203,7 +203,9 @@ void fitness_population_helix(vector<pair<matchResults,matchResults> >& tourname
 }
 
 int score_helix(matchResults match){
-  return (match.won - match.lost + match.tied/2) + (match.median_w_time - match.median_l_time)*2;
+  return match.won - match.lost + match.tied;
+  //return match.won + match.tied + match.median_l_time - match.lost*2;
+  //return match.won/match.median_l_time - match.lost/match.median_w_time;
 }
 
 
@@ -288,7 +290,7 @@ int porcentage(int total, int porc){
   return floor(porc*total/100);
 }
 
-int mean(vector<vector< int > > numbers, int modifier){
+int mean(vector<vector< int > >& numbers, int modifier){
   
   int res = 0;
 
@@ -307,7 +309,7 @@ int mean(vector<vector< int > > numbers, int modifier){
 }
 
 
-void vectorPrinter(vector<vector<int> > & v, ofstream& log){
+void vectorPrinter(vector<vector<int> >& v, ofstream& log){
   log << "{";
   for (int i = 0; i < v.size()-1; ++i){
     log << " {";
@@ -322,4 +324,12 @@ void vectorPrinter(vector<vector<int> > & v, ofstream& log){
     log << v[v.size()-1][j] << ", ";
   }
   log << v[v.size()-1][v[v.size()-1].size()-1] << "} }";
+}
+
+void miniVectorPrinter(vector<int>& v, ofstream& log){
+  log << "{";
+  for (int i = 0; i < v.size()-1; ++i){
+    log << v[i] << ", ";
+  }
+  log << v[v.size()-1] << "}";
 }
