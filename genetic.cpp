@@ -129,9 +129,9 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log){
   //tomamos #breeds better ones
   vector<individual> better_ones(params.breeds);
-  get_fittest_helix(board, better_ones, population, params.iter, log);
+  vector<pair<int, unsigned int> > scores = get_fittest_helix(board, better_ones, population, params.iter, log);
 
-  //nos guardamos los viejos de la población (los no new)
+/*  //nos guardamos los viejos de la población (los no new)
   vector<individual> old_population;
   for (int i = 0; i < population.size()-params.news; ++i){
     old_population.push_back(population[i]);
@@ -139,6 +139,15 @@ void helix(matchBoard board, vector<individual>& population, vector<individual>&
   //buscamos sus #breeds mejores
   vector<individual> old_better_ones(params.breeds);
   get_fittest_helix(board, old_better_ones, old_population, params.iter, log);
+*/
+  vector<individual> old_better_ones;
+  int l = population.size()-1;
+  while(old_better_ones.size() != params.breeds || l < 0){
+    if(scores[l].second < population.size()-1-params.news){
+      old_better_ones.push_back(population[scores[l].second]);
+    }
+    l--;
+  }
 
   //reproducimos los viejos mejores con los mejores globales
   vector<individual> new_generation = breed_twopops(old_better_ones, better_ones, params.quantInd_a_Cross, log);
