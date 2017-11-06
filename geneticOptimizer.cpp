@@ -11,7 +11,7 @@
 
 
 
-pair<float, matchResults> tester_against_fast_minimax(vector<int> weights, int rows , int columns, int c, int p, bool first, int ui, ofstream& log){
+pair<float, matchResults> tester_against_fast_minimax(vector<int> weights, int rows , int columns, int c, int p, bool first, int type, int ui, ofstream& log){
 
   /* Seteamos parametros */
   string cmd = "python2 c_linea.py --blue_player ./parametric_player ";
@@ -42,7 +42,7 @@ pair<float, matchResults> tester_against_fast_minimax(vector<int> weights, int r
   res >> match.median_w_time;
   res >> match.median_l_time;
 
-  float score = match.won/match.median_w_time - match.lost/match.median_l_time;
+  float score = score_helix(match, type);
   log << endl;
   log << "Score: " << score << endl;
   log << "Won " << match.won << " times."<< endl;
@@ -53,7 +53,7 @@ pair<float, matchResults> tester_against_fast_minimax(vector<int> weights, int r
 }
 
 
-pair<float, matchResults> tester_against_random(vector<int> weights, int matches, int rows , int columns, int c, int p, bool first, int ui, ofstream& log){
+pair<float, matchResults> tester_against_random(vector<int> weights, int matches, int rows , int columns, int c, int p, bool first, int type, int ui, ofstream& log){
 
   /* Seteamos parametros */
   string cmd = "python2 c_linea.py --blue_player ./parametric_player ";
@@ -77,20 +77,15 @@ pair<float, matchResults> tester_against_random(vector<int> weights, int matches
   system(cmd.c_str());
   ifstream res("azul.txt");
   int won,lost,tied, median_l_time, median_w_time;
-  res >> won;
-  res >> lost;
-  res >> tied;
-  res >> median_w_time;
-  res >> median_l_time;
-
   matchResults match;
-  match.won = won;
-  match.lost = lost;
-  match.tied = tied;
-  match.median_w_time = median_w_time;
-  match.median_l_time = median_l_time;
+  
+  res >> match.won;
+  res >> match.lost;
+  res >> match.tied;
+  res >> match.median_w_time;
+  res >> match.median_l_time;
 
-  float score = won/median_w_time - lost/median_l_time;
+  float score = score_helix(match, type);
   log << endl;
   log << "Score: " << score << endl;
   log << "Won " << won << " times."<< endl;
@@ -123,8 +118,9 @@ int main(int argc, const char* argv[]) {
   if(algorithm == "helix"){
 
     //Ejemplo de ejecución (el null está por la salida de python):
-    //./geneticOptimizer helix 7 6 4 60 1 20 150 20 3 30 20 2 10000 2 1 3 1000 minimax_fast 0 1 ./gen_hel_res ./gen_hel_err ./gen_hel_test > /dev/null
+    //./geneticOptimizer helix 7 6 4 60 1 20 150 20 30 20 3 2 100 1 1000 minimax_fast 0 ./gen_hel_test > /dev/null
 
+    /*--------seteo e inicialización de parámetros--------*/
     int m = atoi(argv[2]);
     int n = atoi(argv[3]);
     int c = atoi(argv[4]);
@@ -133,49 +129,42 @@ int main(int argc, const char* argv[]) {
     int pop_size = atoi(argv[7]);
     int pop_max_rnd = atoi(argv[8]);
     int pop_min_neg = -1*atoi(argv[9]);
-    int best_ones_quant = atoi(argv[10]);
-    int news_porc = atoi(argv[11]);
-    int breeds_porc = atoi(argv[12]);
+    int news_porc = atoi(argv[10]);
+    int breeds_porc = atoi(argv[11]);
+    int best_ones_quant = atoi(argv[12]);
     int cross_fraction = atoi(argv[13]);
-    int probMut = atoi(argv[14]);
-    int maxMutMod = atoi(argv[15]);
-    int type = atoi(argv[16]);
-    int outputMode = atoi(argv[17]);
-    int matches = atoi(argv[18]);
-    string player = argv[19];
-    int against = atoi(argv[20]);
-    int ui = atoi(argv[21]);
+    int maxMutMod = atoi(argv[14]);
+    int typeScore = atoi(argv[15]);
+    int matches = atoi(argv[16]);
+    string player = argv[17];
+    int against = atoi(argv[18]);
+    string filepath_logtests = argv[19];
 
-    string filepath_results = argv[22];
-    string filepath_logerror = argv[23];
-    string filepath_logtests = argv[24];
+    int ui = 0;
+    string filepath_logerror = "delete_this";
+
+    if(argc > 20) ui = atoi(argv[20]);
+    if(argc > 22) filepath_logerror = argv[21];
 
     ofstream log_hel_err(filepath_logerror);
-  
+    
     matchBoard board;
     board.m = m;
     board.n = n;
     board.c = c;
     board.p = p;
     board.w1_first = w1_first;
-  
-    vector<individual>  population(pop_size, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
-    init_rnd_population(population, pop_min_neg, pop_max_rnd, c);
-
-    vector<individual> best_ones(best_ones_quant);
-    get_fittest_helix(board, best_ones, population, c, player, type, log_hel_err);
-  
+      
     paramsGen params;
-    params.news = porcentage(population.size(), news_porc);
-    params.breeds = porcentage(population.size(), breeds_porc);
+    params.news = porcentage(pop_size, news_porc);
+    params.breeds = porcentage(pop_size, breeds_porc);
     params.quantInd_a_Cross = floor((board.c-1 + 1 + board.m + board.c-2 + board.c-2)/2);
-    params.probMut = probMut;
-    params.maxMut = pop_max_rnd*maxMutMod;
-    params.typeScore = type;
+    params.probMut = pop_size*maxMutMod;
+    params.maxMut = pop_size*3;
+    params.typeScore = typeScore;
     params.player = player;
     params.minMut = pop_min_neg;
   
-    vector<individual> new_population(params.news+params.breeds, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
     
     srand(time(0));
 
@@ -184,6 +173,15 @@ int main(int argc, const char* argv[]) {
     std::chrono::duration<double> time_span;
 
     t1 = now();
+    /*--------comienza el algoritmo--------*/
+
+    vector<individual>  population(pop_size, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
+    init_rnd_population(population, pop_min_neg, pop_max_rnd);
+    vector<individual> best_ones(best_ones_quant);
+    get_fittest_helix(board, best_ones, population, player, typeScore, log_hel_err);
+
+    vector<individual> new_population(params.news+params.breeds, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
+    
     while(new_population.size() > 2){
       //corro la genetica
       helix(board, population, new_population, params, log_hel_err);
@@ -206,44 +204,32 @@ int main(int argc, const char* argv[]) {
       all_individuals.push_back(best_ones[1]);
       all_individuals.push_back(best_ones[2]);
   
-      get_fittest_helix(board, best_ones, all_individuals, c, player, type, log_hel_err);
+      get_fittest_helix(board, best_ones, all_individuals, player, typeScore, log_hel_err);
 
     }
+    /*--------termino el algoritmo--------*/
     t2 = now();
     time_span = std::chrono::duration_cast<std::chrono::duration<double> >(t2-t1);
 
 
 
-    /*---Output---*/
+    /*--------output de resultados--------*/
 
-    string file_res = filepath_results /*+ encode*/; 
-    ofstream log_hel_res(file_res);
+     //medidor general de tiempos y scores
+     ofstream log_hel_test(filepath_logtests, std::ios_base::app | std::ios_base::out);
+     pair<float, matchResults> scoreAndMatch;
 
-    //quizá cambiar esto por switch
-    if(outputMode == 1){
-      //imprimir score del mejor contra random
-      miniVectorPrinter(best_ones[0], log_hel_res);
-      if(against == 0) tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.p, board.w1_first, ui, log_hel_res);
-      if(against == 1) tester_against_fast_minimax(best_ones[0], board.n, board.m, board.c, board.p, board.w1_first, ui, log_hel_res);
-    }
-    if(outputMode == 2){
-      //imprimir todos los mejores
-      vectorPrinter(best_ones, log_hel_res);
-    }
-    if(outputMode == 3){
-      //medidor general de tiempos y scores
-      ofstream res_tests(filepath_logtests, std::ios_base::app | std::ios_base::out);
+     if(against == 0) scoreAndMatch = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
+     if(against == 1) scoreAndMatch = tester_against_fast_minimax(best_ones[0], board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
 
-      pair<float, matchResults> scoreAndMatch;
-      if(against == 0) scoreAndMatch = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.p, board.w1_first, ui, log_hel_res);
-      if(against == 1) scoreAndMatch = tester_against_fast_minimax(best_ones[0], board.n, board.m, board.c, board.p, board.w1_first, ui, log_hel_res);
+     log_hel_test << endl;
+     miniVectorPrinter(best_ones[0], log_hel_test);
+     //guardo todo, TODO
+     log_hel_test << player << "," << scoreAndMatch.first;
+     log_hel_test << "," << scoreAndMatch.second.won << "," << scoreAndMatch.second.lost << "," << scoreAndMatch.second.tied << "," << scoreAndMatch.second.median_w_time << "," << scoreAndMatch.second.median_l_time;
+     log_hel_test << "," << pop_size << "," << maxMutMod << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << typeScore;
+     log_hel_test << "," << m << "," << n << "," << c << "," << p << "," << time_span.count();
 
-      res_tests << endl;
-      miniVectorPrinter(best_ones[0], res_tests);
-      //guardo todo, TODO
-      res_tests << player << "," << scoreAndMatch.first << "," << scoreAndMatch.second.won << "," << scoreAndMatch.second.lost << "," << scoreAndMatch.second.tied << "," << scoreAndMatch.second.median_w_time << "," << scoreAndMatch.second.median_l_time << pop_size << "," << pop_max_rnd << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << type << "," << "," << m << "," << n << "," << c << "," << p << "," << time_span.count();
-
-    }
 
   }
 

@@ -1,7 +1,7 @@
 #include "genetic.h"
 
 
-void init_rnd_population(vector<individual>& population, int min, unsigned int max, int c){
+void init_rnd_population(vector<individual>& population, int min, unsigned int max){
   unsigned int size = population.size();
 
   for (size_t i = 0; i < size; i++) {
@@ -9,15 +9,122 @@ void init_rnd_population(vector<individual>& population, int min, unsigned int m
       population[i][j] =  min + rand() % max;
     }
   }
-
-  //individual_control(population, c);
 }
 
 
-void init_population(vector<individual>& population, int c){
+void init_population(vector<individual>& population){
 
 //para hacer un init mas inteligente sobre "los mejores" o "los peores"
 }
+
+
+void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log){
+  //rankeamos la población, pasamos dummy porque no vamos a guardarnos los mejores globales
+  vector<individual> dummy(0);
+  vector<pair<int, unsigned int> > scores = get_fittest_helix(board, dummy, population, params.player, params.typeScore, log);
+
+  //buscamos los #breeds, que no sean de los #news, mejores
+  vector<individual> old_better_ones;
+  int l = population.size()-1;
+  while(old_better_ones.size() != params.breeds || l < 0){
+    if(scores[l].second < population.size()-1-params.news){
+      old_better_ones.push_back(population[scores[l].second]);
+    }
+    l--;
+  }
+
+  //reproducimos estos entre si;
+  vector<individual> new_generation = breed_helix(old_better_ones, params.quantInd_a_Cross, log);
+
+  //los mutamos
+  mutation(new_generation, params.probMut, params.minMut, params.maxMut);
+
+
+  //los juntamos en new population
+  new_population.clear();
+  for (int i = 0; i < params.news; ++i){
+    new_population.push_back(population[population.size()-1-i]);
+  }
+  for (int i = 0; i < params.breeds; ++i){
+    new_population.push_back(new_generation[i]);
+  }
+
+}
+
+
+vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual>& fittest, vector<individual>& population, string player, int type, ofstream& log){
+
+  //first es score y second es indice del individuo en population
+  vector<pair<int, unsigned int> > scores(population.size());
+  for (int i = 0; i < scores.size(); ++i){scores[i].first = 0;}
+
+  //rankeamos a cada individuo
+  vector<pair<matchResults,matchResults> > fixture = tournament(board, player, population);
+
+  fitness_population_helix(fixture, scores, player, type);
+
+  //los ordeno con pairCompare
+  sort(scores.begin(), scores.end(), pairCompare);
+
+  //meto todo en fittest
+  for (int i = 0; i < fittest.size(); ++i){
+    fittest[i] = population[scores[population.size()-1-i].second];
+  }
+
+  //devuelvo los scores con su indice en population (si se toma el indice de scores, se ignora scores.second, matchea con fittest)
+  return scores;
+}
+
+
+void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores, string player, int type){
+
+    for (int i = 0; i < tournament_results.size(); ++i){
+      scores[tournament_results[i].first.indexPop].first = scores[tournament_results[i].first.indexPop].first + score_helix(tournament_results[i].first, type);
+      scores[tournament_results[i].first.indexPop].second = tournament_results[i].first.indexPop;
+      if(player == "parametric_player"){
+      scores[tournament_results[i].second.indexPop].first = scores[tournament_results[i].second.indexPop].first + score_helix(tournament_results[i].second, type);
+      scores[tournament_results[i].second.indexPop].second = tournament_results[i].second.indexPop;
+      }
+    }
+}
+
+int score_helix(matchResults match, int type){
+  if(type == 1) return match.won - match.lost + match.tied;
+  if(type == 2) return match.won + match.tied + match.median_l_time - match.lost*2;
+  if(type == 3) return match.won + match.tied + (match.median_l_time - match.median_w_time)/2 - match.lost;
+  if(type == 4) return match.won/match.median_l_time - match.lost/match.median_w_time;
+  if(type == 5) return match.won/match.median_w_time - match.lost/match.median_l_time;
+}
+
+
+//este método mezcla los individuos entre dos populations
+//puede hacerse otro método que se llame crossover y mezcle los individuos de una sola population
+vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a, ofstream& log){
+  vector<individual> res;
+
+  int min_population = population_a.size();
+  if(population_b < population_a) min_population = population_b.size();
+
+  for (int i = 0; i < min_population; ++i){
+    res.push_back(crossover(population_a[i], population_b[i], quantInd_a, log));
+  }
+
+  return res;
+}
+
+vector<individual> breed_helix(vector<individual>& population, int quantInd_a, ofstream& log){
+  vector<individual> res;
+  vector<individual> population_copy = population;
+  
+  random_shuffle(population_copy.begin(), population_copy.end());
+
+  for (int i = 0; i < population.size(); ++i){
+    res.push_back(crossover(population[i], population_copy[i], quantInd_a, log));
+  }
+
+  return res;
+}
+
 
 
 //toma quantInd_a de individual_a para el res, y el resto de _b
@@ -58,9 +165,16 @@ vector<pair<matchResults,matchResults> > tournament(matchBoard board, string pla
 
   //en matchResults tenemos qué weight fué
   vector<pair<matchResults,matchResults> > fixture;
-  for (int i = 0; i < population.size(); ++i){
-    for (int j = i+1; j < population.size(); ++j){
-      fixture.push_back(match(population[i], population[j], i, j, player, board));
+
+  if(player == "parametric_player"){
+    for (int i = 0; i < population.size(); ++i){
+      for (int j = i+1; j < population.size(); ++j){
+        fixture.push_back(match(population[i], population[j], i, j, player, board));
+      }
+    }
+  } else if(player == "minimax_fast"){
+    for (int i = 0; i < population.size(); ++i){
+      fixture.push_back(match(population[i], population[i], i, i, player, board));
     }
   }
   return fixture;
@@ -74,29 +188,23 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
   cmd += " 1"; /* cantidad de iteraciones */
   cmd += " " + to_string(weights1.size()); /* cantidad de parametros */
 
-  for (int i = 0; i < weights1.size(); ++i){
-    cmd += " " + to_string(weights1[i]);
-  }
+  for (int i = 0; i < weights1.size(); ++i){cmd += " " + to_string(weights1[i]);}
 
   if(player == "parametric_player"){
     /* pasamos weights 2*/
     cmd+= " --red_player ./parametric_player";
     cmd += " 1"; /* cantidad de iteraciones */
     cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
-    
-    for (int i = 0; i < weights2.size(); ++i){
-      cmd += " " + to_string(weights2[i]);
-    }
+    for (int i = 0; i < weights2.size(); ++i){cmd += " " + to_string(weights2[i]);}
+
   } else if(player == "minimax_fast"){
     cmd += " --red_player ./minimax_alpha_beta_fast_player";
   }
 
   cmd += " --iterations 1";
-  if(board.w1_first) {
-    cmd += " --first azul --columns "+to_string(board.m)+" --rows "+to_string(board.n)+" --p "+to_string(board.p)+" --c "+to_string(board.c)+" ";
-  } else {
-    cmd += " --first rojo --columns "+to_string(board.m)+" --rows "+to_string(board.n)+" --p "+to_string(board.p)+" --c "+to_string(board.c)+" ";
-  }
+  if(board.w1_first){cmd += " --first azul";}
+  else {cmd += " --first rojo";}
+  cmd += " --columns "+to_string(board.m)+" --rows "+to_string(board.n)+" --p "+to_string(board.p)+" --c "+to_string(board.c)+" ";
 
 
   system(cmd.c_str());
@@ -125,120 +233,6 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 }
 
 
-void individual_control(vector<individual>& population, int c){
-  for (int i = 0; i < population.size(); ++i){
-    population[i][c - 2] = INF;
-  }
-}
-
-
-
-void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log){
-  //rankeamos la población, pasamos dummy porque no vamos a guardarnos los mejores globales
-  vector<individual> dummy(0);
-  vector<pair<int, unsigned int> > scores = get_fittest_helix(board, dummy, population, board.c, params.player, params.typeScore, log);
-
-  //buscamos los #breeds, que no sean de los #news, mejores
-  vector<individual> old_better_ones;
-  int l = population.size()-1;
-  while(old_better_ones.size() != params.breeds || l < 0){
-    if(scores[l].second < population.size()-1-params.news){
-      old_better_ones.push_back(population[scores[l].second]);
-    }
-    l--;
-  }
-
-  //reproducimos estos entre si;
-  vector<individual> new_generation = breed_helix(old_better_ones, params.quantInd_a_Cross, log);
-
-  //los mutamos
-  mutation(new_generation, params.probMut, params.minMut, params.maxMut);
-
-
-  //los juntamos en new population
-  new_population.clear();
-  for (int i = 0; i < params.news; ++i){
-    new_population.push_back(population[population.size()-1-i]);
-  }
-  for (int i = 0; i < params.breeds; ++i){
-    new_population.push_back(new_generation[i]);
-  }
-
-}
-
-
-vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual>& fittest, vector<individual>& population, int c, string player, int type, ofstream& log){
-
-  //first es score y second es indice del individuo en population
-  vector<pair<int, unsigned int> > scores(population.size());
-  for (int i = 0; i < scores.size(); ++i){scores[i].first = 0;}
-
-  //rankeamos a cada individuo
-  vector<pair<matchResults,matchResults> > fixture = tournament(board, player, population);
-
-  fitness_population_helix(fixture, scores, type);
-
-  //los ordeno con pairCompare
-  sort(scores.begin(), scores.end(), pairCompare);
-
-  //meto todo en fittest
-  for (int i = 0; i < fittest.size(); ++i){
-    fittest[i] = population[scores[population.size()-1-i].second];
-  }
-
-  //individual_control(population, c);
-
-  //devuelvo los scores con su indice en population (si se toma el indice de scores, se ignora scores.second, matchea con fittest)
-  return scores;
-}
-
-
-void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores, int type){
-
-    for (int i = 0; i < tournament_results.size(); ++i){
-      scores[tournament_results[i].first.indexPop].first = scores[tournament_results[i].first.indexPop].first + score_helix(tournament_results[i].first, type);
-      scores[tournament_results[i].first.indexPop].second = tournament_results[i].first.indexPop;
-      scores[tournament_results[i].second.indexPop].first = scores[tournament_results[i].second.indexPop].first + score_helix(tournament_results[i].second, type);
-      scores[tournament_results[i].second.indexPop].second = tournament_results[i].second.indexPop;
-    }
-}
-
-int score_helix(matchResults match, int type){
-  if(type == 1) return match.won - match.lost + match.tied;
-  if(type == 2) return match.won + match.tied + match.median_l_time - match.lost*2;
-  if(type == 3) return match.won + match.tied + (match.median_l_time - match.median_w_time)/2 - match.lost;
-  if(type == 4) return match.won/match.median_l_time - match.lost/match.median_w_time;
-  if(type == 5) return match.won/match.median_w_time - match.lost/match.median_l_time;
-}
-
-
-//este método mezcla los individuos entre dos populations
-//puede hacerse otro método que se llame crossover y mezcle los individuos de una sola population
-vector<individual> breed_twopops(vector<individual>& population_a, vector<individual>& population_b, int quantInd_a, ofstream& log){
-  vector<individual> res;
-
-  int min_population = population_a.size();
-  if(population_b < population_a) min_population = population_b.size();
-
-  for (int i = 0; i < min_population; ++i){
-    res.push_back(crossover(population_a[i], population_b[i], quantInd_a, log));
-  }
-
-  return res;
-}
-
-vector<individual> breed_helix(vector<individual>& population, int quantInd_a, ofstream& log){
-  vector<individual> res;
-  vector<individual> population_copy = population;
-  
-  random_shuffle(population_copy.begin(), population_copy.end());
-
-  for (int i = 0; i < population.size(); ++i){
-    res.push_back(crossover(population[i], population_copy[i], quantInd_a, log));
-  }
-
-  return res;
-}
 
 
 
