@@ -11,7 +11,7 @@
 #include <vector>
 #include <algorithm>    // std::sort
 
-#define INFINITY std::numeric_limits<int>::max();
+#define INF std::numeric_limits<int>::max();
 using namespace std;
 
 
@@ -134,7 +134,7 @@ int scoreBoard(Board &b, int player, vector<int>& weights, ofstream& log){
 int generateAndScore(Board &b, int player,int c, vector<int>& weights, ofstream& log ){
 
   int best_move = 0;
-  int best_move_score = -INFINITY;
+  int best_move_score = -INF;
 
   log << "------------------------------------------------------------------------"<< endl;
 
@@ -173,7 +173,7 @@ int main(int argc, const char* argv[]) {
     vector<int> weights;
     if(argc >= 3){
       int params = atoi(argv[2]);
-      for (size_t i = 0; i < params; i++) {
+      for (int i = 0; i < params; i++) {
         weights.push_back(atoi(argv[3+i]));
       }
     }

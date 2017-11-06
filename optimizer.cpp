@@ -121,9 +121,9 @@ int compareWeights(vector<int> weights1,vector<int> weights2, int iter, int rows
   pair<float,float> scores1 = match(weights1, weights2, iter, rows , columns, c, p,true);
   pair<float,float> scores2 = match(weights1, weights2, iter, rows , columns, c, p,false);
   /* veamos quien es el mejor */
-  bool better_than_random = (fitness(weights1,10,rows,columns,c,p)>=fitness(weights2,10,rows,columns,c,p));
+  //bool better_than_random = (fitness(weights1,10,rows,columns,c,p)>=fitness(weights2,10,rows,columns,c,p));
 
-  if(((scores1.first + scores2.first) > (scores1.second + scores2.second)) && better_than_random ) return 1;
+  if(((scores1.first + scores2.first) > (scores1.second + scores2.second)) ) return 1;
   return 0;
 }
 
@@ -166,27 +166,25 @@ vector<int> gridSearchHelper(vector<int> params_to_optimize, vector<int> range,v
 
 vector<int> gridSearch(int M, int N, int c , int P, vector<int> range){
 
-  vector<int> init_Weights(3*c + M -3 );
+  vector<int> init_Weights(3*c + M -5 );
   for (size_t i = 0; i < c-2; i++) {
     init_Weights[i] = 5*(i+1);
   }
-  init_Weights[c-2] = 100000000; // peso de ganar la partida
-  init_Weights[c-1] = -500000;
-  init_Weights[c] = -10;
+  init_Weights[c - 2] = -10;
 
   // pesos de candida de fichas en columnas
-  for (size_t i = c + 1; i <= c + M/2 + 1; i++) {
-    init_Weights[i] = i-c;
+  for (size_t i = c - 1; i <= c + M/2 - 1; i++) {
+    init_Weights[i] = i-c +1;
   }
 
-  for (size_t i = c + M/2 + 1; i < c + M + 1; i++) {
-    init_Weights[i] = (c + M) - (i - c + M/2 + 1) -1 ;
+  for (size_t i = c + M/2; i < c + M - 1; i++) {
+    init_Weights[i] = (c + M + 1) - (i +  M/2 - 1) ;
   }
-  for (size_t i = c + M + 1; i < c + M + (c-2) + 1; i++) {
-    init_Weights[i] = 5 * (i+1 - c - M );
+  for (size_t i = c + M - 1; i < c + M + (c-2) - 1; i++) {
+    init_Weights[i] = 5 * (i+2 - c - M );
   }
-  for (size_t i =  c + M + (c-2) + 1; i < c + M + (c-2) + (c-2) + 1; i++) {
-    init_Weights[i] = -5 * (i+1 - c - M -(c-2));
+  for (size_t i =  c + M + (c-2) - 1; i < c + M + (c-2) + (c-2) - 1; i++) {
+    init_Weights[i] = -5 * (i+2 - c - M -(c-2)) - 1;
   }
 
   cout << "Weights: " << endl;
@@ -203,19 +201,19 @@ vector<int> gridSearch(int M, int N, int c , int P, vector<int> range){
 
   /* optimizamos parametros del segundo feature */
   params_to_optimize.clear();
-  params_to_optimize.push_back(c);
+  params_to_optimize.push_back(c-2);
   weights = gridSearchHelper(params_to_optimize,range,weights,N,M,c,P);
 
 
   /* optimizamos parametros del cuarto feature */
   params_to_optimize.clear();
-  for (size_t i = c + M + 1; i < c + M + (c-2) + 1; i++) params_to_optimize.push_back(i);
+  for (size_t i = c + M - 1; i < c + M + (c-2) - 1; i++) params_to_optimize.push_back(i);
   weights = gridSearchHelper(params_to_optimize,range,weights,N,M,c,P);
 
 
   /* optimizamos parametros del quinto feature */
   params_to_optimize.clear();
-  for (size_t i = c + M + (c-2) + 1; i < c + M + (c-2) +(c-2) + 1; i++) params_to_optimize.push_back(i);
+  for (size_t i = c + M + (c-2) - 1; i < c + M + (c-2) +(c-2) - 1; i++) params_to_optimize.push_back(i);
   weights = gridSearchHelper(params_to_optimize,range,weights,N,M,c,P);
 
   return weights;
@@ -238,12 +236,18 @@ int main(){
   int p = 21;
 
 
-  vector<int> weights = {4, 15, 100000000,-500000, -10, 0, 1, 2, 3, 2, 1, 0,5,10,-6,-11};
+  vector<int> weights = {4, 15, -10, 0, 1, 2, 3, 2, 1, 0,5,10,-6,-11};
   //weights = {14, 25, 100000, 25, 2, 21, 28, 29, 15, -8, -1, 24, 25, -11, 31};
   //vector<int> params_to_optimize = {11,12,13,14};
-  //vector<int> range{-100,-10,-5,-2,0,2,5,10,100};
+  vector<int> range;
+  for (int i = 0; i < 16; i++) {
+    range.push_back(-i);
+  }
+  for (size_t i = 1; i < 16; i++) {
+    range.push_back(i);
+  }
 
-  //weights = gridSearch(columns,rows,c,p,range);
+  weights = gridSearch(columns,rows,c,p,range);
 
   cout << "Weights: " << endl;
   for (size_t i = 0; i < weights.size(); i++) {

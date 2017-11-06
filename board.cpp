@@ -263,7 +263,7 @@ vector<int> Board::lineCounts(int player){
 
 vector<int> Board::possibleMoves(){
   vector<int> rows(_cols,-1);
-  for (size_t i = 0; i < _cols; i++) {
+  for (int i = 0; i < _cols; i++) {
     if(!isColFull(i)){
       int row = 0;
       while(_board[row][i] != EMPTY){
@@ -281,7 +281,7 @@ vector<int> Board::player_prof(unsigned int player){
 
   vector<int> rows = possibleMoves();
   vector<int> res(_cols,0);
-  for (size_t i = 0; i < _cols; i++) {
+  for (int i = 0; i < _cols; i++) {
     if(rows[i] != -1){
       int m1 = max(horizontal(rows[i],i,player),vertical(rows[i],i,player));
       int m2 = max(diagonalR(rows[i],i,player),diagonalL(rows[i],i,player));
@@ -294,10 +294,10 @@ vector<int> Board::player_prof(unsigned int player){
 
 /****************************************************************************/
 
-vector<int> Board::columnsCount(unsigned int player){
+vector<int> Board::columnsCount(int player){
   vector<int> count(_cols);
-  for (size_t j = 0; j < _cols; j++) {
-    for (size_t i = 0; i < _rows; i++) {
+  for (int j = 0; j < _cols; j++) {
+    for (int i = 0; i < _rows; i++) {
       if(_board[i][j] == player) count[j]++;
       if(_board[i][j] == EMPTY) break;
     }
@@ -308,8 +308,8 @@ vector<int> Board::columnsCount(unsigned int player){
 
 int Board::LosingHazard(){
 
-  for (size_t i = 0; i < _rows; i++) {
-    for (size_t j = 0; j < _cols; j++) {
+  for (int i = 0; i < _rows; i++) {
+    for (int j = 0; j < _cols; j++) {
       if(_board[i][j] == EMPTY && (i==0 || _board[i-1][j]!=EMPTY ) ){
         if(horizontal(i,j,OPPONENT) >= _c) return 1;
         if(vertical(i,j,OPPONENT) >= _c) return 1;
@@ -410,8 +410,8 @@ vector<int> Board::countOpen(unsigned int player){
 
   vector<int> count(_c-2,0);
 
-  for (size_t i = 0; i < _rows; i++) {
-    for (size_t j = 0; j < _cols; j++) {
+  for (int i = 0; i < _rows; i++) {
+    for (int j = 0; j < _cols; j++) {
       if(_board[i][j] == EMPTY){
         pair<int,int> oH = openHorizontal(i,j,player);
         if(oH.first > 2) count[oH.first-3]++;

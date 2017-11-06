@@ -120,17 +120,17 @@ int main(int argc, const char* argv[]){
   board.p = atoi(argv[8]);
   board.w1_first = false;
   if(atoi(argv[9])) board.w1_first = true;
-  
+
   vector<int> weights1;
   vector<int> weights2;
   string player;
- 
+
   for (int i = 0; i < features; i++){
     weights1.push_back(atoi(argv[10+i]));
     if(second_player == "parametric_player") weights2.push_back(atoi(argv[10+features+i]));
   }
 
-  pair<matchResults,matchResults> match = finalMatch(weights1, weights2, matches, player, board);
+  pair<matchResults,matchResults> match = finalMatch(weights1, weights2,ui, matches, player, board);
 
   ofstream log("archivo.txt", std::ios_base::app | std::ios_base::out);
   miniVectorPrinter(weights1, log);

@@ -30,7 +30,7 @@ public:
     unsigned int linesOfSize(int n, int player);
     vector<int> possibleMoves();
     vector<int> player_prof(unsigned int player);
-    vector<int> columnsCount(unsigned int player);
+    vector<int> columnsCount(int player);
     pair<int,int> openHorizontal(int i, int j, int player);
     pair<int,int> openVertical(int i, int j, int player);
     pair<int,int> openDiagonalR(int i, int j, int player);
