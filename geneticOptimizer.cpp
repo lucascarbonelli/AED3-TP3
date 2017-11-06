@@ -228,7 +228,7 @@ int main(int argc, const char* argv[]) {
 
     log_hel_test << "," << player << "," << playerAgainst << "," << scoreAndMatch.first;
     log_hel_test << "," << scoreAndMatch.second.won << "," << scoreAndMatch.second.lost << "," << scoreAndMatch.second.tied << "," << scoreAndMatch.second.median_w_time << "," << scoreAndMatch.second.median_l_time;
-    log_hel_test << "," << pop_size << "," << maxMutMod << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << typeScore;
+    log_hel_test << "," << pop_size << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << typeScore;
     log_hel_test << "," << pop_max_rnd << "," << pop_min_neg << "," << cross_fraction << "," << maxMutMod;
     log_hel_test << "," << m << "," << n << "," << c << "," << p << "," << playerFirst << "," << time_span.count();
 

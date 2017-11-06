@@ -38,7 +38,7 @@ struct matchResults{
 };
 
 
-pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2, int matches, string player, matchBoard& board){
+pair<matchResults,matchResults> finalMatch(vector<int> weights1, vector<int> weights2, int matches, string player, matchBoard& board){
 
   /* Seteamos parametros */
   string cmd = "python2 c_linea.py --blue_player ./parametric_player";
@@ -125,7 +125,7 @@ int main(int argc, const char* argv[]){
     if(second_player == "parametric_player") weights2.push_back(atoi(argv[4+features+i]));
   }
 
-  pair<matchResults,matchResults> match = match(weights1, weights2, matches, player, board);
+  pair<matchResults,matchResults> match = finalMatch(weights1, weights2, matches, player, board);
 
   ofstream log("archivo.txt", std::ios_base::app | std::ios_base::out);
   miniVectorPrinter(weights1, log);
