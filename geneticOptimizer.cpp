@@ -95,11 +95,6 @@ pair<float, matchResults> tester_against_random(vector<int> weights, int matches
   return make_pair(score, match);
 }
 
-
-
-
-
-
 int main(int argc, const char* argv[]) {
 
   if (argc < 2)
@@ -125,7 +120,8 @@ int main(int argc, const char* argv[]) {
     int n = atoi(argv[3]);
     int c = atoi(argv[4]);
     int p = atoi(argv[5]);
-    int w1_first = atoi(argv[6]);
+    bool w1_first = false;
+    if(atoi(argv[6])) w1_first = true;
     int pop_size = atoi(argv[7]);
     int pop_max_rnd = atoi(argv[8]);
     int pop_min_neg = -1*atoi(argv[9]);
@@ -147,14 +143,14 @@ int main(int argc, const char* argv[]) {
     if(argc > 22) filepath_logerror = argv[21];
 
     ofstream log_hel_err(filepath_logerror);
-    
+
     matchBoard board;
     board.m = m;
     board.n = n;
     board.c = c;
     board.p = p;
     board.w1_first = w1_first;
-      
+
     paramsGen params;
     params.news = porcentage(pop_size, news_porc);
     params.breeds = porcentage(pop_size, breeds_porc);
@@ -165,7 +161,7 @@ int main(int argc, const char* argv[]) {
     params.player = player;
     params.minMut = pop_min_neg;
   
-    
+
     srand(time(0));
 
     std::chrono::high_resolution_clock::time_point t1;
@@ -181,7 +177,7 @@ int main(int argc, const char* argv[]) {
     get_fittest_helix(board, best_ones, population, player, typeScore, log_hel_err);
 
     vector<individual> new_population(params.news+params.breeds, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
-    
+
     while(new_population.size() > 2){
       //corro la genetica
       helix(board, population, new_population, params, log_hel_err);
@@ -215,21 +211,26 @@ int main(int argc, const char* argv[]) {
 
     /*--------output de resultados--------*/
 
-     //medidor general de tiempos y scores
-     ofstream log_hel_test(filepath_logtests, std::ios_base::app | std::ios_base::out);
-     pair<float, matchResults> scoreAndMatch;
+    //medidor general de tiempos y scores
+    ofstream log_hel_test(filepath_logtests, std::ios_base::app | std::ios_base::out);
+    pair<float, matchResults> scoreAndMatch;
+    if(against == 0) scoreAndMatch = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
+    if(against == 1) scoreAndMatch = tester_against_fast_minimax(best_ones[0], board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
+    
+    log_hel_test << endl;
+    miniVectorPrinter(best_ones[0], log_hel_test);
+    
+    //guardo todo, TODO
+    string playerAgainst = "random";
+    if(against == 1) playerAgainst = "fast_minimax";
+    string playerFirst = "false";
+    if(w1_first) playerFirst = "true";
 
-     if(against == 0) scoreAndMatch = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
-     if(against == 1) scoreAndMatch = tester_against_fast_minimax(best_ones[0], board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
-
-     log_hel_test << endl;
-     miniVectorPrinter(best_ones[0], log_hel_test);
-     //guardo todo, TODO
-     log_hel_test << player << "," << scoreAndMatch.first;
-     log_hel_test << "," << scoreAndMatch.second.won << "," << scoreAndMatch.second.lost << "," << scoreAndMatch.second.tied << "," << scoreAndMatch.second.median_w_time << "," << scoreAndMatch.second.median_l_time;
-     log_hel_test << "," << pop_size << "," << maxMutMod << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << typeScore;
-     log_hel_test << "," << m << "," << n << "," << c << "," << p << "," << time_span.count();
-
+    log_hel_test << "," << player << "," << playerAgainst << "," << scoreAndMatch.first;
+    log_hel_test << "," << scoreAndMatch.second.won << "," << scoreAndMatch.second.lost << "," << scoreAndMatch.second.tied << "," << scoreAndMatch.second.median_w_time << "," << scoreAndMatch.second.median_l_time;
+    log_hel_test << "," << pop_size << "," << maxMutMod << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << typeScore;
+    log_hel_test << "," << pop_max_rnd << "," << pop_min_neg << "," << cross_fraction << "," << maxMutMod;
+    log_hel_test << "," << m << "," << n << "," << c << "," << p << "," << playerFirst << "," << time_span.count();
 
   }
 
