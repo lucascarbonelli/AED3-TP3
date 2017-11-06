@@ -37,7 +37,7 @@ int minimaxAlphaBetaFast(Board &b, bool miniMax, int alpha, int beta, int deep){
                 if(!b.isColFull(i)){
                     Board nextLevelBoard(b);
                     nextLevelBoard.addPlayer(i);
-                    int maxInThisBranch = minimaxAlphaBetaFast(nextLevelBoard, false, alpha, beta, deep--);
+                    int maxInThisBranch = minimaxAlphaBetaFast(nextLevelBoard, false, alpha, beta, deep - 1);
                     if(maxInThisBranch > result) {result = maxInThisBranch; }
                     if(result > alpha) {alpha = result; }
                 }
@@ -51,7 +51,7 @@ int minimaxAlphaBetaFast(Board &b, bool miniMax, int alpha, int beta, int deep){
                 if(!b.isColFull(i)){
                     Board nextLevelBoard(b);
                     nextLevelBoard.addOpponent(i);
-                    int maxInThisBranch = minimaxAlphaBetaFast(nextLevelBoard, true, alpha, beta, deep--);
+                    int maxInThisBranch = minimaxAlphaBetaFast(nextLevelBoard, true, alpha, beta, deep - 1);
                     if(maxInThisBranch < result) {result = maxInThisBranch; }
                     if(result < beta) {beta = result; }
                 }
