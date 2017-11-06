@@ -306,6 +306,23 @@ vector<int> Board::columnsCount(unsigned int player){
 }
 
 
+int Board::LosingHazard(){
+
+  for (size_t i = 0; i < _rows; i++) {
+    for (size_t j = 0; j < _cols; j++) {
+      if(_board[i][j] == EMPTY && (i==0 || _board[i-1][j]!=EMPTY ) ){
+        if(horizontal(i,j,OPPONENT) >= _c) return 1;
+        if(vertical(i,j,OPPONENT) >= _c) return 1;
+        if(diagonalR(i,j,OPPONENT) >= _c) return 1;
+        if(diagonalL(i,j,OPPONENT) >= _c) return 1;
+      }
+    }
+  }
+  return 0;
+}
+
+
+
 
 
 /***************************************************************************/

@@ -36,6 +36,7 @@ public:
     pair<int,int> openDiagonalR(int i, int j, int player);
     pair<int,int> openDiagonalL(int i, int j, int player);
     vector<int> countOpen(unsigned int player);
+    int LosingHazard();
 
 private:
     std::vector<std::vector<int> > _board;

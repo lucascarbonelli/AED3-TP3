@@ -31,6 +31,9 @@ using namespace std;
 
 //////
 >>  python c_linea.py --blue_player ./parametric_player 10 15 4 15 1000000 -10 0 1 2 3 2 1 0 5 10 -6 -11 --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
+>>  python c_linea.py --blue_player ./parametric_player 10 15 14 25 100000 25 2 21 28 29 15 -8 -1 24 25 -11 31 --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
+
+python c_linea.py --blue_player ./parametric_player 10 15 4 15 1000000 -10 0 1 2 3 2 1 0 5 10 -6 -11 --red_player ./minimax_alpha_beta_fast_player --first azul --ui True --columns 7 --rows 6 --p 21 --c 4
 
 
 
@@ -81,47 +84,41 @@ int scoreBoard(Board &b, int player, vector<int>& weights, ofstream& log){
   /* Lineas del jugador */
   vector<int> player_lines = b.lineCounts(PLAYER);
   for (size_t i = 0; i < player_lines.size(); i++) {
-    //log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
     score += weights[feature] * player_lines[i];
     feature++;
-    //log <<"Feature :"<< feature<< endl;
   }
+  /* puede perder con el tablero */
+  int losingHazard = b.LosingHazard();
+  score += weights[feature] * losingHazard;
+  feature++;
+
 
   /* Perfiles  */
   vector<int> opponent_profile = b.player_prof(OPPONENT);
   for (size_t i = 0; i < opponent_profile.size(); i++) {
-    //log << "si el mueve a "<< i <<" "<< "puede hacer una linea de longitud "  << opponent_profile[i] << endl;
     score += weights[feature] * opponent_profile[i];
-    //log <<"Feature :"<< feature<< endl;
   }
   feature++;
-  //log <<"Feature :"<< feature<< endl;
 
   /* fichas en columnas */
   vector<int> player_col_count = b.columnsCount(PLAYER);
   for (size_t i = 0; i < player_col_count.size(); i++) {
-    //log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
     score += weights[feature] * player_col_count[i];
     feature++;
-    //log <<"Feature :"<< feature<< endl;
   }
 
   /* lineas abiertas del jugador */
   vector<int> player_open_count = b.countOpen(PLAYER);
   for (size_t i = 0; i < player_open_count.size(); i++) {
-    //log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
     score += weights[feature] * player_open_count[i];
     feature++;
-    //log <<"Feature :"<< feature<< endl;
   }
 
   /* lineas abiertas del oponente */
   vector<int> opponent_open_count = b.countOpen(OPPONENT);
   for (size_t i = 0; i < opponent_open_count.size(); i++) {
-    //log << "Lineas de longitud " << i <<": "<< player_lines[i] << endl;
     score += weights[feature] * opponent_open_count[i];
     feature++;
-    //log <<"Feature :"<< feature<< endl;
   }
 
 
