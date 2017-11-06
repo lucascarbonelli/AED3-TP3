@@ -154,7 +154,7 @@ int main(int argc, const char* argv[]) {
     paramsGen params;
     params.news = porcentage(pop_size, news_porc);
     params.breeds = porcentage(pop_size, breeds_porc);
-    params.cross_cut_point = floor((board.c-1 + 1 + board.m + board.c-2 + board.c-2)/2);
+    params.cross_cut_point = floor((board.c-2 + 1 + board.m + board.c-2 + board.c-2)/2);
     params.probMut = pop_size*maxMutMod;
     params.maxMut = pop_size*3;
     params.typeScore = typeScore;
@@ -171,7 +171,7 @@ int main(int argc, const char* argv[]) {
     t1 = now();
     /*--------comienza el algoritmo--------*/
 
-    vector<individual>  population(pop_size, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
+    vector<individual>  population(pop_size, individual(board.c-2 + 1 + board.m + board.c-2 + board.c-2));
     init_rnd_population(population, pop_min_neg, pop_max_rnd);
     vector<individual> best_ones(best_ones_quant);
     get_fittest_helix(board, best_ones, population, player, typeScore, log_hel_err);
