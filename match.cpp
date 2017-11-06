@@ -106,6 +106,7 @@ void miniVectorPrinter(vector<int>& v, ofstream& log){
 
 int main(int argc, const char* argv[]){
   //./finalMatch weights.size() parametric_player 1 1 7 6 4 60 1 todaLasWeights1 todasLasWeights2
+  //./finalMatch 14 parametric_player 1 1 7 6 4 60 1 74 26 22 45 11 -17 -12 21 108 46 81 81 27 128 4 15 -10 0 1 2 3 2 1 0 5 10 -6 -11
 
   int features = atoi(argv[1]);
   string second_player = argv[2];
@@ -124,7 +125,7 @@ int main(int argc, const char* argv[]){
   vector<int> weights2;
   string player;
  
-  for (size_t i = 0; i < features; i++){
+  for (int i = 0; i < features; i++){
     weights1.push_back(atoi(argv[10+i]));
     if(second_player == "parametric_player") weights2.push_back(atoi(argv[10+features+i]));
   }
