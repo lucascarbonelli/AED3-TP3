@@ -31,7 +31,7 @@ random_player:
 	g++ -std=c++11 random_player.cpp -o random_player
 
 finalMatch:
-	g++ -std=c++11 match.cpp -o finalMatch
+	g++ -std=c++11 finalMatch.cpp -o finalMatch
 
 %.o: %.cpp
 	$(CPP) $(FLAGS) -c -o $@ $<
