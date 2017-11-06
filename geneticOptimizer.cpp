@@ -158,7 +158,7 @@ int main(int argc, const char* argv[]) {
     paramsGen params;
     params.news = porcentage(pop_size, news_porc);
     params.breeds = porcentage(pop_size, breeds_porc);
-    params.quantInd_a_Cross = floor((board.c-1 + 1 + board.m + board.c-2 + board.c-2)/2);
+    params.cross_cut_point = floor((board.c-1 + 1 + board.m + board.c-2 + board.c-2)/2);
     params.probMut = pop_size*maxMutMod;
     params.maxMut = pop_size*3;
     params.typeScore = typeScore;
