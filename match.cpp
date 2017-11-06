@@ -38,7 +38,7 @@ struct matchResults{
 };
 
 
-pair<matchResults,matchResults> finalMatch(vector<int> weights1, vector<int> weights2, int matches, string player, matchBoard& board){
+pair<matchResults,matchResults> finalMatch(vector<int> weights1, vector<int> weights2, int ui, int matches, string player, matchBoard& board){
 
   /* Seteamos parametros */
   string cmd = "python2 c_linea.py --blue_player ./parametric_player";
@@ -55,7 +55,7 @@ pair<matchResults,matchResults> finalMatch(vector<int> weights1, vector<int> wei
     cmd += " " + to_string(weights2.size()); /* cantidad de parametros */
     for (int i = 0; i < weights2.size(); ++i){cmd += " " + to_string(weights2[i]);}
 
-  } else if(player == "minimax_fast"){
+  } else if(player == "minimax_alpha_beta_fast_player"){
     cmd += " --red_player ./minimax_alpha_beta_fast_player";
     cmd += " --iterations 1";
   }
@@ -68,6 +68,7 @@ pair<matchResults,matchResults> finalMatch(vector<int> weights1, vector<int> wei
   else {cmd += " --first rojo";}
   cmd += " --columns "+to_string(board.m)+" --rows "+to_string(board.n)+" --p "+to_string(board.p)+" --c "+to_string(board.c)+" ";
 
+  if(ui) cmd += "--ui true";
 
   system(cmd.c_str());
   ifstream red_results("rojo.txt");
@@ -104,25 +105,28 @@ void miniVectorPrinter(vector<int>& v, ofstream& log){
 
 
 int main(int argc, const char* argv[]){
+  //./finalMatch weights.size() parametric_player 1 1 7 6 4 60 1 todaLasWeights1 todasLasWeights2
+
   int features = atoi(argv[1]);
   string second_player = argv[2];
   int matches = atoi(argv[3]);
-  
+  int ui = atoi(argv[4]);
+
   matchBoard board;
-  board.m = atoi(argv[4]);
-  board.n = atoi(argv[5]);
-  board.c = atoi(argv[6]);
-  board.p = atoi(argv[7]);
+  board.m = atoi(argv[5]);
+  board.n = atoi(argv[6]);
+  board.c = atoi(argv[7]);
+  board.p = atoi(argv[8]);
   board.w1_first = false;
-  if(atoi(argv[8])) board.w1_first = true;
+  if(atoi(argv[9])) board.w1_first = true;
   
   vector<int> weights1;
   vector<int> weights2;
   string player;
  
   for (size_t i = 0; i < features; i++){
-    weights1.push_back(atoi(argv[5+i]));
-    if(second_player == "parametric_player") weights2.push_back(atoi(argv[4+features+i]));
+    weights1.push_back(atoi(argv[10+i]));
+    if(second_player == "parametric_player") weights2.push_back(atoi(argv[10+features+i]));
   }
 
   pair<matchResults,matchResults> match = finalMatch(weights1, weights2, matches, player, board);
