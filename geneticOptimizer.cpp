@@ -7,7 +7,7 @@
 #include <vector>
 #include <stdio.h>
 #include <sys/stat.h>
-#include "genetic.cpp"
+#include "geneticHelix.cpp"
 
 
 
