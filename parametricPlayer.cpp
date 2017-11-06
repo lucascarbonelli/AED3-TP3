@@ -83,14 +83,15 @@ int scoreBoard(Board &b, int player, vector<int>& weights, ofstream& log){
 
   /* Lineas del jugador */
   vector<int> player_lines = b.lineCounts(PLAYER);
-  for (size_t i = 0; i < player_lines.size(); i++) {
+  for (size_t i = 0; i < player_lines.size() - 1; i++) {
     score += weights[feature] * player_lines[i];
     feature++;
   }
+  score += 10000000 * player_lines.back();
+
   /* puede perder con el tablero */
   int losingHazard = b.LosingHazard();
-  score += weights[feature] * losingHazard;
-  feature++;
+  score += -500000 * losingHazard;
 
 
   /* Perfiles  */
