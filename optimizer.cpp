@@ -21,7 +21,7 @@ float fitness(vector<int> weights, int iter, int rows , int columns, int c, int 
 	 	cmd += " " + to_string(weights[i]);
 	}
 
-  cmd += " --red_player ./minimax_alpha_beta_fast_player";
+  cmd += " --red_player ./random_player";
 	cmd += " --iterations " + to_string(iter);
 	cmd += " --first azul --columns "+to_string(columns)+" --rows "+to_string(rows)+" --p "+to_string(p)+" --c "+to_string(c)+" ";
 
@@ -104,15 +104,7 @@ pair<float,float> match(vector<int> weights1,vector<int> weights2, int iter,int 
 }
 
 
-vector<int> generateRandomWeights(int params,vector<int> range){
 
-  vector<int> weights;
-  for (size_t i = 0; i < params; i++) {
-    int e = range[rand() % range.size()];
-    weights.push_back(e);
-  }
-  return weights;
-}
 
 
 
@@ -137,7 +129,6 @@ void backtrack(vector<int> params_to_optimize, vector<int>& weights, vector<int>
     if(res==1){
       S.weights = weights;
     }
-    cout << endl;
     /* para la ansiedad */
     cout << "Iter: " << iter << endl;
     iter++;
@@ -152,7 +143,7 @@ void backtrack(vector<int> params_to_optimize, vector<int>& weights, vector<int>
 }
 
 vector<int> gridSearchHelper(vector<int> params_to_optimize, vector<int> range,vector<int> init_Weights,int rows , int columns, int c, int p){
-  int iter = 10;
+  int iter = 0;
   int n = params_to_optimize.size();
   vector<int> weights(init_Weights.size());
   Solution S;
@@ -173,17 +164,18 @@ vector<int> gridSearch(int M, int N, int c , int P, vector<int> range){
   init_Weights[c - 2] = -10;
 
   // pesos de candida de fichas en columnas
-  for (size_t i = c - 1; i <= c + M/2 - 1; i++) {
-    init_Weights[i] = i-c +1;
+  for (size_t i = 0; i <= M/2 ; i++) {
+    init_Weights[c-1 + i] = i;
+  }
+  for (size_t i = 0; i <  M/2; i++) {
+    init_Weights[i + c-1 + M/2] = M/2 - i;
   }
 
-  for (size_t i = c + M/2; i < c + M - 1; i++) {
-    init_Weights[i] = (c + M + 1) - (i +  M/2 - 1) ;
-  }
-  for (size_t i = c + M - 1; i < c + M + (c-2) - 1; i++) {
+
+  for (size_t i = c-1 + M ; i < c-1 + M + (c-2); i++) {
     init_Weights[i] = 5 * (i+2 - c - M );
   }
-  for (size_t i =  c + M + (c-2) - 1; i < c + M + (c-2) + (c-2) - 1; i++) {
+  for (size_t i =  c-1 + M + (c-2); i < c-1 + M + (c-2) + (c-2) ; i++) {
     init_Weights[i] = -5 * (i+2 - c - M -(c-2)) - 1;
   }
 
@@ -207,13 +199,13 @@ vector<int> gridSearch(int M, int N, int c , int P, vector<int> range){
 
   /* optimizamos parametros del cuarto feature */
   params_to_optimize.clear();
-  for (size_t i = c + M - 1; i < c + M + (c-2) - 1; i++) params_to_optimize.push_back(i);
+  for (size_t i = c-1 + M ; i < c-1 + M + (c-2) ; i++) params_to_optimize.push_back(i);
   weights = gridSearchHelper(params_to_optimize,range,weights,N,M,c,P);
 
 
   /* optimizamos parametros del quinto feature */
   params_to_optimize.clear();
-  for (size_t i = c + M + (c-2) - 1; i < c + M + (c-2) +(c-2) - 1; i++) params_to_optimize.push_back(i);
+  for (size_t i = c-1 + M + (c-2) ; i < c-1 + M + (c-2) +(c-2); i++) params_to_optimize.push_back(i);
   weights = gridSearchHelper(params_to_optimize,range,weights,N,M,c,P);
 
   return weights;
@@ -228,26 +220,35 @@ vector<int> gridSearch(int M, int N, int c , int P, vector<int> range){
 
 
 
-int main(){
+int main(int argc, const char* argv[]){
 
-  int c = 4;
   int columns = 7;
   int rows = 6;
+  int c = 4;
   int p = 21;
+  int bounds = 17;
+  int step = 1;
+
+  if(argc >= 1){
+    columns = atoi(argv[1]);
+    rows = atoi(argv[2]);
+    c = atoi(argv[3]);
+    p = atoi(argv[4]);
+  }
+  if(argc >= 6) bounds = atoi(argv[6]);
+  if(argc >= 7) step = atoi(argv[7]);
 
 
-  vector<int> weights = {4, 15, -10, 0, 1, 2, 3, 2, 1, 0,5,10,-6,-11};
-  //weights = {14, 25, 100000, 25, 2, 21, 28, 29, 15, -8, -1, 24, 25, -11, 31};
-  //vector<int> params_to_optimize = {11,12,13,14};
+
+
   vector<int> range;
-  for (int i = 0; i < 16; i++) {
+  for (int i = 0 ; i < bounds; i++) {
     range.push_back(-i);
   }
-  for (size_t i = 1; i < 16; i++) {
+  for (int i = 0 ; i < bounds; i++) {
     range.push_back(i);
   }
-
-  weights = gridSearch(columns,rows,c,p,range);
+  vector<int> weights = gridSearch(columns,rows,c,p,range);
 
   cout << "Weights: " << endl;
   for (size_t i = 0; i < weights.size(); i++) {
@@ -255,6 +256,7 @@ int main(){
   }
   cout << endl;
 
+  cout << "Resultados contra random" << endl;
   float won = fitness(weights,100,rows,columns,c,p);
 
 	return 0;
