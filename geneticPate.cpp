@@ -73,51 +73,12 @@ void uIntVectorPrinter(vector<unsigned int>& v){
   return;
 }
 
-
-float fitness(vector<int> weights, int iter, int rows , int columns, int c, int p){
-
-	/* Seteamos parametros */
-	string cmd = "python c_linea.py --blue_player ./parametric_player ";
-  cmd += " " + to_string(iter); /* cantidad de iteraciones */
-  cmd += " " + to_string(weights.size()); /* cantidad de parametros */
-
-  for (int i = 0; i < weights.size(); ++i){
-	 	cmd += " " + to_string(weights[i]);
-	}
-
-  cmd += " --red_player ./random_player";
-	cmd += " --iterations " + to_string(iter);
-	cmd += " --first azul --columns "+to_string(columns)+" --rows "+to_string(rows)+" --p "+to_string(p)+" --c "+to_string(c)+" ";
-
-	/* Corremos el juego que dejara los resultados en res.txt*/
-	system(cmd.c_str());
-	ifstream res("azul.txt");
-	int won,lost,tied, median_l_time, median_w_time;
-	res >> won;
-	res >> lost;
-	res >> tied;
-  res >> median_w_time;
-  res >> median_l_time;
-	//cout << "Ganados: "<< won << " | " << "Perdidos: " << lost << " | " << "Empatados: " << tied <<endl;
-  //cout << "median_w_time: " << median_w_time << " | " << "median_l_time: " << median_l_time << endl;
-
-  float score = won/median_w_time - lost/median_l_time;
-  cout << "Score: " << score << endl;
-  cout << "Won " << won << " times."<< endl;
-  cout << "Lost " << lost << " times."<< endl;
-  cout << "Tied " << tied << " times."<< endl;
-  return score;
-
-}
-
-
-
 void init_rnd_population(vector<individual>& population, unsigned int max){
   unsigned int size = population.size();
 
   for (size_t i = 0; i < size; i++) {
     for (size_t j = 0; j < population[0].size(); j++) {
-      population[i][j] = rand() % max;
+      population[i][j] = -500 + rand() % 150;
     }
   }
 }
@@ -191,6 +152,46 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
   return make_pair(blue,red);
 }
 
+
+matchResults match_boss(vector<int> weights1, int p1i, matchBoard& board){
+
+  /* Seteamos parametros */
+  string cmd = "python2 c_linea.py --blue_player ./parametric_player";
+  /* pasamos weights 1 */
+  cmd += " " + to_string(1); /* cantidad de iteraciones */
+  cmd += " " + to_string(weights1.size()); /* cantidad de parametros */
+
+  for (int i = 0; i < weights1.size(); ++i){
+    cmd += " " + to_string(weights1[i]);
+  }
+
+  cmd += " --red_player ./minimax_alpha_beta_fast_player 1";
+  cmd += " --iterations 1";
+
+  if(board.w1_first) {
+    cmd += " --first azul --columns "+to_string(board.m)+" --rows "+to_string(board.n)+" --p "+to_string(board.p)+" --c "+to_string(board.c)+" ";
+  } else {
+    cmd += " --first rojo --columns "+to_string(board.m)+" --rows "+to_string(board.n)+" --p "+to_string(board.p)+" --c "+to_string(board.c)+" ";
+  }
+
+
+  system(cmd.c_str());
+  ifstream blue_results("azul.txt");
+
+  matchResults blue;
+
+  blue_results >> blue.won;
+  blue_results >> blue.lost;
+  blue_results >> blue.tied;
+  blue_results >> blue.median_w_time;
+  blue_results >> blue.median_l_time;
+  blue.weights = weights1;
+  blue.indexPop = p1i;
+
+  return blue;
+}
+
+
 //según el enunciado, no es recomendado hacer jugar con minimax_player, tarda mucho
 vector<pair<unsigned int,float > > tournament(matchBoard board, vector<individual>& population, int iter){
 
@@ -209,15 +210,18 @@ vector<pair<unsigned int,float > > tournament(matchBoard board, vector<individua
       scores[j].second.second += matchRes.second.lost + matchRes.second.won + matchRes.second.tied;
       
     }
-
+    matchResults matchRes = match_boss(population[i], i, board);
+    //cout << matchRes.won << "," << matchRes.lost <<"," << matchRes.tied << endl;
+    scores[i].second.first += matchRes.won;
+    scores[i].second.second += matchRes.lost + matchRes.won + matchRes.tied;
 
   }
   vector<pair<unsigned int,float> > res;
   for (size_t i = 0; i < scores.size(); i++) {
-    //cout << scores[i].second.first << " ---- " << scores[i].second.second << endl;;
+    cout << scores[i].second.first << " ---- " << scores[i].second.second << endl;;
     float rank = float(scores[i].second.first)/float(scores[i].second.second);
-
-    res.push_back(make_pair(i,rank*100));
+    //cout << rank << endl;
+    res.push_back(make_pair(i,rank));
   }
 
   return res;
@@ -280,11 +284,8 @@ vector<individual> new_generation(vector<unsigned int>& ranking, vector<individu
 
   vector<individual> new_population;
   // Replico los n**1/2 mejores individuos
-  cout  << "NUEVA GEN" << endl;
-
-  for (int i = 0; i < floor(sqrt(population_size)); ++i){
+  for (int i = 0; i < ceil(sqrt(population_size)); ++i){
     individual sqrt_best = population[ranking[i]];
-    mutate(sqrt_best);
     new_population.push_back(sqrt_best);
   }
 
@@ -327,6 +328,7 @@ vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size,
     //uIntFloatPairPrinter(fitness);
     vector<unsigned int> ranking;
     best_ind = rank_population(fitness,ranking);
+    uIntVectorPrinter(ranking);
     //uIntVectorPrinter(ranking);
     cout << "Bredeando..." << endl;
     population = new_generation(ranking,population,population.size());
@@ -340,6 +342,7 @@ vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size,
 
 
 int main(){
+  srand(time(0));
 
   matchBoard board;
   board.n = 6;
@@ -347,18 +350,10 @@ int main(){
   board.c = 4;
   board.p = 21;
   board.w1_first = true;
-  int iter = 1;
-  int min_gen = 20;
-  vector<individual> population = genetic_optimization(board,25,15,20,100,iter,99,min_gen);
+  int iter = 10;
+  int min_gen = 5;
+  vector<individual> population = genetic_optimization(board,50,16,100,100,iter,0.99,min_gen);
 
-  /*for (size_t i = 0; i < population.size(); i++) {
-    cout << "Weights: " << endl;
-    for (size_t j = 0; j < population[i].size(); j++) {
-      cout << population[i][j] << " ";
-    }
-    cout << endl;
-    float w = fitness(population[i],1000,board.n,board.m,board.c,board.p);
-  }*/
   return 0;
 }
 
