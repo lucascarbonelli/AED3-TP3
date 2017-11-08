@@ -92,7 +92,7 @@ std::string read_str() {
 
 int main(int argc, char* argv[]) {
 
-    int levelsToExplore = 1;
+    int levelsToExplore = 4;
 
     if(argc == 2){
         levelsToExplore = std::stoi(argv[1]);
