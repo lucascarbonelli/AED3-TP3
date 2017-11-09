@@ -113,7 +113,7 @@ int main(int argc, const char* argv[]) {
   if(algorithm == "helix"){
 
     //Ejemplo de ejecución (el null está por la salida de python):
-    //./geneticOptimizer helix 7 6 4 60 1 20 150 20 30 20 3 2 100 1 1000 minimax_fast 0 ./gen_hel_test > /dev/null
+    //./geneticOptimizer helix 7 6 4 60 1 20 150 20 30 20 3 2 100 1 1000 minimax_fast ./gen_hel_test > /dev/null
 
     /*--------seteo e inicialización de parámetros--------*/
     int m = atoi(argv[2]);
@@ -133,14 +133,13 @@ int main(int argc, const char* argv[]) {
     int typeScore = atoi(argv[15]);
     int matches = atoi(argv[16]);
     string player = argv[17];
-    int against = atoi(argv[18]);
-    string filepath_logtests = argv[19];
+    string filepath_logtests = argv[18];
 
     int ui = 0;
     string filepath_logerror = "delete_this";
 
-    if(argc > 20) ui = atoi(argv[20]);
-    if(argc > 22) filepath_logerror = argv[21];
+    if(argc > 19) ui = atoi(argv[19]);
+    if(argc > 20) filepath_logerror = argv[20];
 
     ofstream log_hel_err(filepath_logerror);
 
@@ -214,24 +213,24 @@ int main(int argc, const char* argv[]) {
     //medidor general de tiempos y scores
     ofstream log_hel_test(filepath_logtests, std::ios_base::app | std::ios_base::out);
     pair<float, matchResults> scoreAndMatch;
-    if(against == 0) scoreAndMatch = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
-    if(against == 1) scoreAndMatch = tester_against_fast_minimax(best_ones[0], board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
+    pair<float, matchResults> scoreAndMatch_fm;
+    scoreAndMatch = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
+    scoreAndMatch_fm = tester_against_fast_minimax(best_ones[0], board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
     
     log_hel_test << endl;
     miniVectorPrinter(best_ones[0], log_hel_test);
     
     //guardo todo, TODO
-    string playerAgainst = "random";
-    if(against == 1) playerAgainst = "fast_minimax";
     string playerFirst = "false";
     if(w1_first) playerFirst = "true";
 
-    log_hel_test << "," << player << "," << playerAgainst << "," << scoreAndMatch.first;
+    log_hel_test << "," << player << "," << scoreAndMatch.first;
     log_hel_test << "," << scoreAndMatch.second.won << "," << scoreAndMatch.second.lost << "," << scoreAndMatch.second.tied << "," << scoreAndMatch.second.median_w_time << "," << scoreAndMatch.second.median_l_time;
-    log_hel_test << "," << pop_size << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << typeScore;
-    log_hel_test << "," << pop_max_rnd << "," << pop_min_neg << "," << cross_fraction << "," << maxMutMod;
-    log_hel_test << "," << m << "," << n << "," << c << "," << p << "," << playerFirst << "," << time_span.count();
+    log_hel_test << "," << scoreAndMatch_fm.first << "," << scoreAndMatch_fm.second.won << "," << scoreAndMatch_fm.second.lost << "," << scoreAndMatch_fm.second.tied << "," << scoreAndMatch_fm.second.median_w_time << "," << scoreAndMatch_fm.second.median_l_time;
+    log_hel_test << "," << pop_size << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << playerFirst << "," << time_span.count();
 
+
+    //weights,trainer,against,score,won,lost,tied,m_w,m_l,pop_size,bes_ones,news_porc,breeds_porc,first,time
   }
 
   if(algorithm == "pate"){

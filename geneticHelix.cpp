@@ -164,10 +164,7 @@ void fitness_population_helix(vector<pair<matchResults,matchResults> >& tourname
 
 int score_helix(matchResults match, int type){
   if(type == 1) return match.won - match.lost + match.tied;
-  if(type == 2) return match.won + match.tied + match.median_l_time - match.lost*2;
-  if(type == 3) return match.won + match.tied + (match.median_l_time - match.median_w_time)/2 - match.lost;
-  if(type == 4) return match.won/match.median_l_time - match.lost/match.median_w_time;
-  if(type == 5) return match.won/match.median_w_time - match.lost/match.median_l_time;
+  if(type == 2) return match.won/match.median_w_time - match.lost/match.median_l_time;
 }
 
 
@@ -343,9 +340,9 @@ void vectorPrinter(vector<vector<int> >& v, ofstream& log){
 }
 
 void miniVectorPrinter(vector<int>& v, ofstream& log){
-  log << "{";
+  log << '"';
   for (int i = 0; i < v.size()-1; ++i){
-    log << v[i] << ",";
+    log << v[i] << " ";
   }
-  log << v[v.size()-1] << "}";
+  log << v[v.size()-1] << '"';
 }
