@@ -193,7 +193,7 @@ matchResults match_boss(vector<int> weights1, int p1i, matchBoard& board){
 
 
 //según el enunciado, no es recomendado hacer jugar con minimax_player, tarda mucho
-vector<pair<unsigned int,float > > tournament(matchBoard board, vector<individual>& population, int iter){
+vector<pair<unsigned int,float > > tournament(matchBoard board, vector<individual>& population){
 
   //en matchResults tenemos qué weight fué
   vector<pair<unsigned int,pair<unsigned int, unsigned int> > > scores;
@@ -202,18 +202,18 @@ vector<pair<unsigned int,float > > tournament(matchBoard board, vector<individua
   }
 
   for (int i = 0; i < population.size(); ++i){
-    for (int j = i+1; j < population.size(); ++j){
-      pair<matchResults,matchResults> matchRes = match(population[i], population[j], i, j, iter, board);
+    for (int j = 0; j < population.size(); ++j){
+      pair<matchResults,matchResults> matchRes = match(population[i], population[j], i, j, 1, board);
       scores[i].second.first += matchRes.first.won;
-      scores[i].second.second += matchRes.first.lost + matchRes.first.won + matchRes.first.tied;
+      scores[i].second.second++;
       scores[j].second.first += matchRes.first.won;
-      scores[j].second.second += matchRes.second.lost + matchRes.second.won + matchRes.second.tied;
+      scores[j].second.second++;
       
     }
     matchResults matchRes = match_boss(population[i], i, board);
     //cout << matchRes.won << "," << matchRes.lost <<"," << matchRes.tied << endl;
     scores[i].second.first += matchRes.won;
-    scores[i].second.second += matchRes.lost + matchRes.won + matchRes.tied;
+    scores[i].second.second++;
 
   }
   vector<pair<unsigned int,float> > res;
@@ -306,7 +306,7 @@ vector<individual> new_generation(vector<unsigned int>& ranking, vector<individu
 
 
 
-vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int max_generations, unsigned int max, unsigned int iter, float benchmark, int min_gen){
+vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int max_generations, unsigned int max, float benchmark, int min_gen){
 
   int generation = 0;
 
@@ -323,7 +323,7 @@ vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size,
     //Esto deberia ordenar la poblacion  de mejor a peor fitness
     // y retorar el mejor score
     cout << "Compitiendo..." << endl;
-    vector<pair<unsigned int,float> > fitness = tournament(board,population,iter);
+    vector<pair<unsigned int,float> > fitness = tournament(board,population);
     cout << "Rankeando..." << endl;
     //uIntFloatPairPrinter(fitness);
     vector<unsigned int> ranking;
@@ -352,7 +352,7 @@ int main(){
   board.w1_first = true;
   int iter = 10;
   int min_gen = 5;
-  vector<individual> population = genetic_optimization(board,50,16,100,100,iter,0.99,min_gen);
+  vector<individual> population = genetic_optimization(board,10,14,100,100,0.99,min_gen);
 
   return 0;
 }
