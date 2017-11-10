@@ -229,26 +229,26 @@ int main(int argc, const char* argv[]){
   int bounds = 17;
   int step = 1;
 
-  if(argc >= 1){
-    columns = atoi(argv[1]);
-    rows = atoi(argv[2]);
-    c = atoi(argv[3]);
-    p = atoi(argv[4]);
-  }
-  if(argc >= 6) bounds = atoi(argv[6]);
-  if(argc >= 7) step = atoi(argv[7]);
+  //if(argc >= 1){
+  //  columns = atoi(argv[1]);
+  //  rows = atoi(argv[2]);
+  //  c = atoi(argv[3]);
+  //  p = atoi(argv[4]);
+  //}
+  //if(argc >= 6) bounds = atoi(argv[6]);
+  //if(argc >= 7) step = atoi(argv[7]);
 
 
 
 
-  vector<int> range;
-  for (int i = 0 ; i < bounds; i++) {
-    range.push_back(-i);
-  }
-  for (int i = 0 ; i < bounds; i++) {
-    range.push_back(i);
-  }
-  vector<int> weights = gridSearch(columns,rows,c,p,range);
+  //vector<int> range;
+  //for (int i = 0 ; i < bounds; i++) {
+  //  range.push_back(-i);
+  //}
+  //for (int i = 0 ; i < bounds; i++) {
+  //  range.push_back(i);
+  //}
+  vector<int> weights = {58,56,-36,-40,89,-17,43,97,105,-14,52,81,26,28};
 
   cout << "Weights: " << endl;
   for (size_t i = 0; i < weights.size(); i++) {
@@ -257,7 +257,7 @@ int main(int argc, const char* argv[]){
   cout << endl;
 
   cout << "Resultados contra random" << endl;
-  float won = fitness(weights,100,rows,columns,c,p);
+  float won = fitness(weights,1000,rows,columns,c,p);
 
 	return 0;
 
