@@ -52,7 +52,7 @@ struct matchResults{
 //Ḿétodos
 
 void init_rnd_population(vector<individual>& population, int min, unsigned int max);
-void init_population(vector<individual>& population);
+void init_population(vector<individual>& population, string filepath);
 void helix(matchBoard board, vector<individual>& population, vector<individual>& new_population, paramsGen params, ofstream& log);
 vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<individual>& fittest, vector<individual>& population, string player, int type, ofstream& log);
 void fitness_population_helix(vector<pair<matchResults,matchResults> >& tournament_results, vector<pair<int, unsigned int> >& scores, string player, int type);
@@ -71,6 +71,7 @@ int porcentage(int total, int porc);
 int mean(vector<vector< int > >& numbers, int modifier);
 void vectorPrinter(vector<vector<int> >& v, ofstream& log);
 void miniVectorPrint(vector<int>& v, ofstream& log);
+void charPrinter(vector<int>& v, ofstream& log);
 
 
 /*------------------------Algoritmos------------------------*/
@@ -88,7 +89,7 @@ void init_rnd_population(vector<individual>& population, int min, unsigned int m
 
 
 //este método requiere un archivo de sólo numeros separados por espacios
-void init_population(vector<individual>& population, int printWorst, string filepath){
+void init_population(vector<individual>& population, string filepath){
 
   ifstream file(filepath);
   int size = population[0].size();
@@ -98,6 +99,7 @@ void init_population(vector<individual>& population, int printWorst, string file
   vector<int> genes;
   while(getline(file, line, ' ') || i < population.size()*size){
     genes.push_back(stoi(line));
+    i++;
   }
 
   int l = 0;

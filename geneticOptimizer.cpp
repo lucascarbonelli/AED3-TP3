@@ -113,7 +113,7 @@ int main(int argc, const char* argv[]) {
   if(algorithm == "helix"){
 
     //Ejemplo de ejecución (el null está por la salida de python):
-    //./geneticOptimizer helix 7 6 4 60 1 20 150 20 30 20 3 2 100 1 1000 minimax_fast ./gen_hel_test > /dev/null
+    //./geneticOptimizer helix 7 6 4 60 0 30 150 25 20 30 3 2 100 1 1000 minimax_fast ./helix_example > /dev/null
 
     /*--------seteo e inicialización de parámetros--------*/
     int m = atoi(argv[2]);
@@ -135,13 +135,15 @@ int main(int argc, const char* argv[]) {
     string player = argv[17];
     string filepath_logtests = argv[18];
 
+    string filepath_lastexp = "delete_this";
     int printWorst = 0;
     int ui = 0;
     string filepath_logerror = "delete_this";
 
-    if(argc > 19) printWorst = atoi(argv[19]);
-    if(argc > 20) ui = atoi(argv[20]);
-    if(argc > 21) filepath_logerror = argv[21];
+    if(argc > 19) filepath_lastexp = argv[19];
+    if(argc > 20) printWorst = atoi(argv[20]);
+    if(argc > 21) ui = atoi(argv[21]);
+    if(argc > 22) filepath_logerror = argv[22];
 
     ofstream log_hel_err(filepath_logerror);
 
@@ -169,7 +171,7 @@ int main(int argc, const char* argv[]) {
     std::chrono::high_resolution_clock::time_point t2;
     std::chrono::duration<double> time_span;
 
-    vector<pair<individual, int> > worst(5);
+    vector<pair<individual, int> > worst(3);
     for (int i = 0; i < worst.size(); ++i)
     {
       individual ind(board.c-2 + 1 + board.m + board.c-2 + board.c-2);
@@ -183,6 +185,7 @@ int main(int argc, const char* argv[]) {
 
     vector<individual>  population(pop_size, individual(board.c-2 + 1 + board.m + board.c-2 + board.c-2));
     init_rnd_population(population, pop_min_neg, pop_max_rnd);
+    if(argc > 19) init_population(population, filepath_lastexp);
     vector<individual> best_ones(best_ones_quant);
     vector<pair<int, unsigned int> > scores =  get_fittest_helix(board, best_ones, population, player, typeScore, log_hel_err);
 
