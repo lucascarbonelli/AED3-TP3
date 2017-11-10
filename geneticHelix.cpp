@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <iterator>   //split string
 #include <stdlib.h>   //rand
 #include <utility>    //pair
 #include <algorithm>  //sort, random_shuffle
@@ -86,9 +87,29 @@ void init_rnd_population(vector<individual>& population, int min, unsigned int m
 }
 
 
-void init_population(vector<individual>& population){
+//este método requiere un archivo de sólo numeros separados por espacios
+void init_population(vector<individual>& population, int printWorst, string filepath){
 
-//para hacer un init mas inteligente sobre "los mejores" o "los peores"
+  ifstream file(filepath);
+  int size = population[0].size();
+
+  string line;
+  int i = 0;
+  vector<int> genes;
+  while(getline(file, line, ' ') || i < population.size()*size){
+    genes.push_back(stoi(line));
+  }
+
+  int l = 0;
+  for (int i = 0; i < population.size(); ++i){
+    individual ind;
+    for (int j = 0; j < population[0].size(); ++j){
+      ind.push_back(genes[l]);
+      l++;
+    }
+    population[i] = ind;
+  }
+
 }
 
 
@@ -144,6 +165,8 @@ vector<pair<int, unsigned int> > get_fittest_helix(matchBoard board, vector<indi
   for (int i = 0; i < fittest.size(); ++i){
     fittest[i] = population[scores[population.size()-1-i].second];
   }
+
+
 
   //devuelvo los scores con su indice en population (si se toma el indice de scores, se ignora scores.second, matchea con fittest)
   return scores;
@@ -290,8 +313,6 @@ pair<matchResults,matchResults> match(vector<int> weights1, vector<int> weights2
 
 
 
-
-
 /*---------------------------------------Auxiliares------------------------------------------*/
 
 
@@ -345,4 +366,10 @@ void miniVectorPrinter(vector<int>& v, ofstream& log){
     log << v[i] << " ";
   }
   log << v[v.size()-1] << '"';
+}
+
+void charPrinter(vector<int>& v, ofstream& log){
+  for (int i = 0; i < v.size(); ++i){
+    log << v[i] << " ";
+  }
 }

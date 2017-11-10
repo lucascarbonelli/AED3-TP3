@@ -135,11 +135,13 @@ int main(int argc, const char* argv[]) {
     string player = argv[17];
     string filepath_logtests = argv[18];
 
+    int printWorst = 0;
     int ui = 0;
     string filepath_logerror = "delete_this";
 
-    if(argc > 19) ui = atoi(argv[19]);
-    if(argc > 20) filepath_logerror = argv[20];
+    if(argc > 19) printWorst = atoi(argv[19]);
+    if(argc > 20) ui = atoi(argv[20]);
+    if(argc > 21) filepath_logerror = argv[21];
 
     ofstream log_hel_err(filepath_logerror);
 
@@ -167,13 +169,26 @@ int main(int argc, const char* argv[]) {
     std::chrono::high_resolution_clock::time_point t2;
     std::chrono::duration<double> time_span;
 
+    vector<pair<individual, int> > worst(5);
+    for (int i = 0; i < worst.size(); ++i)
+    {
+      individual ind(board.c-2 + 1 + board.m + board.c-2 + board.c-2);
+      pair<individual, int> par = make_pair(ind, 1000000000);
+      worst[i] = par;
+    }
+
+
     t1 = now();
     /*--------comienza el algoritmo--------*/
 
     vector<individual>  population(pop_size, individual(board.c-2 + 1 + board.m + board.c-2 + board.c-2));
     init_rnd_population(population, pop_min_neg, pop_max_rnd);
     vector<individual> best_ones(best_ones_quant);
-    get_fittest_helix(board, best_ones, population, player, typeScore, log_hel_err);
+    vector<pair<int, unsigned int> > scores =  get_fittest_helix(board, best_ones, population, player, typeScore, log_hel_err);
+
+    for (int i = 0; i < worst.size(); ++i){
+      worst[i] = make_pair(population[scores[i].second], scores[i].first);
+    }
 
     vector<individual> new_population(params.news+params.breeds, individual(board.c-1 + 1 + board.m + board.c-2 + board.c-2));
 
@@ -198,8 +213,16 @@ int main(int argc, const char* argv[]) {
       all_individuals.push_back(best_ones[0]);
       all_individuals.push_back(best_ones[1]);
       all_individuals.push_back(best_ones[2]);
-  
-      get_fittest_helix(board, best_ones, all_individuals, player, typeScore, log_hel_err);
+      scores.clear();
+      scores = get_fittest_helix(board, best_ones, all_individuals, player, typeScore, log_hel_err);
+
+      for (int i = 0; i < scores.size(); ++i){
+        for (int j = 0; j < worst.size(); ++j){
+          if (worst[j].second > scores[i].first && !(find(worst.begin(), worst.end(), make_pair(all_individuals[scores[i].second], scores[i].first)) != worst.end())){
+            worst[j] = make_pair(all_individuals[scores[i].second], scores[i].first);
+          }
+        }
+      }
 
     }
     /*--------termino el algoritmo--------*/
@@ -217,20 +240,27 @@ int main(int argc, const char* argv[]) {
     scoreAndMatch = tester_against_random(best_ones[0], matches, board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
     scoreAndMatch_fm = tester_against_fast_minimax(best_ones[0], board.n, board.m, board.c, board.p, board.w1_first, typeScore, ui, log_hel_err);
     
-    log_hel_test << endl;
-    miniVectorPrinter(best_ones[0], log_hel_test);
-    
-    //guardo todo, TODO
-    string playerFirst = "false";
-    if(w1_first) playerFirst = "true";
+    if(printWorst == 0){
 
-    log_hel_test << "," << player << "," << scoreAndMatch.first;
-    log_hel_test << "," << scoreAndMatch.second.won << "," << scoreAndMatch.second.lost << "," << scoreAndMatch.second.tied << "," << scoreAndMatch.second.median_w_time << "," << scoreAndMatch.second.median_l_time;
-    log_hel_test << "," << scoreAndMatch_fm.first << "," << scoreAndMatch_fm.second.won << "," << scoreAndMatch_fm.second.lost << "," << scoreAndMatch_fm.second.tied << "," << scoreAndMatch_fm.second.median_w_time << "," << scoreAndMatch_fm.second.median_l_time;
-    log_hel_test << "," << pop_size << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << playerFirst << "," << time_span.count();
+      log_hel_test << endl;
+      miniVectorPrinter(best_ones[0], log_hel_test);
+      
+      //guardo todo, TODO
+      string playerFirst = "false";
+      if(w1_first) playerFirst = "true";
+  
+      log_hel_test << "," << player << "," << scoreAndMatch.first;
+      log_hel_test << "," << scoreAndMatch.second.won << "," << scoreAndMatch.second.lost << "," << scoreAndMatch.second.tied << "," << scoreAndMatch.second.median_w_time << "," << scoreAndMatch.second.median_l_time;
+      log_hel_test << "," << scoreAndMatch_fm.first << "," << scoreAndMatch_fm.second.won << "," << scoreAndMatch_fm.second.lost << "," << scoreAndMatch_fm.second.tied << "," << scoreAndMatch_fm.second.median_w_time << "," << scoreAndMatch_fm.second.median_l_time;
+      log_hel_test << "," << pop_size << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << playerFirst << "," << time_span.count();
+      //weights,trainer,scoreRandom,wonRandom,lostRandom,tiedRandom,m_wRandom,m_lRandom,scoreMinimax,wonMinimax,lostMinimax,tiedMinimax,m_wMinimax,m_lMinimax,pop_size,bes_ones,news_porc,breeds_porc,first,time
 
-
-    //weights,trainer,against,score,won,lost,tied,m_w,m_l,pop_size,bes_ones,news_porc,breeds_porc,first,time
+    } else {
+      for (int i = 0; i < worst.size(); ++i){
+        charPrinter(worst[i].first, log_hel_test);
+        log_hel_test << endl;
+      }
+    }
   }
 
   if(algorithm == "pate"){
