@@ -109,7 +109,7 @@ int main(int argc, const char* argv[]) {
   }
 
   //Ejemplo de ejecución (el null está por la salida de python):
-  //./geneticOptimizer 7 6 4 60 0 30 150 25 20 30 3 2 100 1 1000 minimax_fast ./helix_example > /dev/null
+  //./geneticOptHelix 7 6 4 60 0 30 150 25 20 30 3 2 100 1 1000 minimax_fast ./helix_example > /dev/null
   
 
   /*--------seteo e inicialización de parámetros--------*/
