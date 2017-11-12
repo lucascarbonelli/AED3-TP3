@@ -225,8 +225,8 @@ int main(int argc, char const *argv[]) {
     return -1;
   }
 
-  columns = atoi(argv[1]);
-  rows = atoi(argv[2]);
+  rows = atoi(argv[1]);
+  columns = atoi(argv[2]);
   c = atoi(argv[3]);
   p = atoi(argv[4]);
 
