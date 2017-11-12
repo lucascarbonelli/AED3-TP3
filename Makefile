@@ -1,7 +1,7 @@
 CPP=g++
 FLAGS= -std=c++11 -g -Wall
 
-all: minimax_player random_player minimax_alpha_beta_player minimax_alpha_beta_fast_player parametric_player optimizer geneticOptimizer finalMatch
+all: minimax_player random_player minimax_alpha_beta_player minimax_alpha_beta_fast_player parametric_player optimizer geneticOptHelix finalMatch
 
 geneticJuab:
 	g++ -std=c++11 geneticJuab.cpp -o geneticJuab
@@ -13,7 +13,7 @@ optimizer:
 	g++ -std=c++11 optimizer.cpp -o optimizer
 
 geneticOptimizer:
-	g++ -std=c++11 geneticOptimizer.cpp -o geneticOptimizer
+	g++ -std=c++11 geneticOptHelix.cpp -o geneticOptHelix
 
 parametric_player: parametricPlayer.cpp board.o
 	$(CPP) $(FLAGS) -o $@ $< board.o
@@ -37,4 +37,4 @@ finalMatch:
 	$(CPP) $(FLAGS) -c -o $@ $<
 
 clean:
-	rm -f minimax_player minimax_alpha_beta_player minimax_alpha_beta_fast_player random_player optimizer geneticOptimizer geneticPate *.o *~
+	rm -f minimax_player minimax_alpha_beta_player minimax_alpha_beta_fast_player random_player optimizer geneticOptHelix geneticPate *.o *~
