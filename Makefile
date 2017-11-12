@@ -12,7 +12,7 @@ geneticPate:
 optimizer:
 	g++ -std=c++11 optimizer.cpp -o optimizer
 
-geneticOptimizer:
+geneticOptHelix:
 	g++ -std=c++11 geneticOptHelix.cpp -o geneticOptHelix
 
 parametric_player: parametricPlayer.cpp board.o
