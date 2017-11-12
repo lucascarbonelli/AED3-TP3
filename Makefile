@@ -1,7 +1,7 @@
 CPP=g++
 FLAGS= -std=c++11 -g -Wall
 
-all: minimax_player random_player minimax_alpha_beta_player minimax_alpha_beta_fast_player parametric_player optimizer geneticOptHelix finalMatch
+all: minimax_player random_player minimax_alpha_beta_player minimax_alpha_beta_fast_player parametric_player optimizer geneticOptHelix
 
 geneticJuab:
 	g++ -std=c++11 geneticJuab.cpp -o geneticJuab
@@ -30,8 +30,6 @@ minimax_alpha_beta_fast_player: minimax_alpha_beta_fast_player.cpp board.o
 random_player:
 	g++ -std=c++11 random_player.cpp -o random_player
 
-finalMatch:
-	g++ -std=c++11 finalMatch.cpp -o finalMatch
 
 %.o: %.cpp
 	$(CPP) $(FLAGS) -c -o $@ $<
