@@ -9,8 +9,9 @@
 #include <algorithm>  //sort, random_shuffle
 #include <math.h> 	  //floor
 #include <string>
-
+#include <chrono>
 using namespace std;
+using namespace chrono;
 
 typedef vector<int> individual;
 
@@ -84,7 +85,7 @@ void IntVectorPrinter(vector<int>& v, ofstream& f){
   return;
 }
 
-void init_rnd_population(vector<individual>& population, unsigned int max){
+void init_rnd_population(vector<individual>& population){
   unsigned int size = population.size();
 
   for (size_t i = 0; i < size; i++) {
@@ -253,7 +254,7 @@ float rank_population(vector<pair<unsigned int,float> >& scores, vector<unsigned
 pair<unsigned int, unsigned int> select(vector<unsigned int> ranking, vector<individual> population){
   random_device rd;
   mt19937 gen(rd());
-  binomial_distribution<> d(population.size(), 0.1);
+  binomial_distribution<> d(population.size()-1, 0.01);
   pair<unsigned int, unsigned int> parents = make_pair(d(gen),d(gen));
   return parents;
 }
@@ -282,7 +283,7 @@ void mutate(individual& ind){
   mt19937 gen(rd());
   // give "true" 1/5 of the time
   // give "false" 4/5 of the time
-  bernoulli_distribution d(0.2);
+  bernoulli_distribution d(0.1);
 
   for (size_t i = 0; i < ind.size(); i++) {
     if(d(gen)) ind[i] = -50 + (rand() % MAX);
@@ -311,23 +312,31 @@ vector<individual> new_generation(vector<unsigned int>& ranking, vector<individu
   return new_population;
 }
 
-void guardarStats(unsigned int pop, unsigned int gen, float best_score, ofstream& f){
+void guardarStats(unsigned int pop, unsigned int gen, float best_score,float fitness, ofstream& f){
 
-  f <<pop<<","<<gen << "," << best_score << endl;
+  f <<pop<<","<<gen << "," /*<< fitness <<","*/<< best_score << endl;
 
 }
 
+float fitnessDeLaPoblacionEntera(vector<pair<unsigned int,float> > fitness){
+  float valor = 0;
+  for (int i = 0; i < fitness.size(); ++i)
+  {
+    valor += fitness[i].second;
+  }
+  return float(valor)/float(fitness.size());
+}
 
 
-vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int max_generations, unsigned int max, float benchmark, int min_gen,ofstream& f){
+vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size, unsigned int ind_size, unsigned int max_generations, float benchmark){
 
   int generation = 0;
 
   vector<individual> population(pop_size,individual(ind_size));
   srand(time(0));
-  init_rnd_population(population,max);
+  init_rnd_population(population);
   //popPrinter(population);
-  cout << "Genero poblacion inicial" << endl;;
+  //cout << "Genero poblacion inicial" << endl;;
   //// Itero hasta superar mi benchmark
   float best_ind = 0;
   while(generation < max_generations){
@@ -343,7 +352,8 @@ vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size,
     best_ind = rank_population(fitness,ranking);
     //uIntVectorPrinter(ranking);
     //uIntVectorPrinter(ranking);
-    guardarStats(pop_size,generation,best_ind,f);
+    float fitnessTot = fitnessDeLaPoblacionEntera(fitness);
+    //guardarStats(pop_size,generation,best_ind,fitnessTot,f);
 
     if (best_ind > benchmark) break;
 
@@ -352,18 +362,52 @@ vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size,
     generation++;
     cout << "Mejor score: " << best_ind << endl;
   }
-
+  //f << generation << endl;
   return population;
 
 }
 
 
-int main(){
+int main(int argc, const char* argv[]){
+
+  if (argc != 9)
+  {
+    cout << "Los parámetros de entrada son: " << endl;
+    cout << "./geneticOptHelix M N c P 'w1_first  booleano como 0 o 1', pop_size, max_generations, benchmark(entre 0 y 1 ej 0.99) " << endl;
+    cout << endl;
+    cout << "Para saber mas sobre los parámetros del algoritmo elegido," << endl;
+    cout << "por favor contacte a la central de servicio técnico de" << endl;
+    cout << "Juab's Group® mas cercano a su localidad actual. Gracias." << endl;
+    return -1;
+  }
+  int m = atoi(argv[1]);
+  int n = atoi(argv[2]);
+  int c = atoi(argv[3]);
+  int p = atoi(argv[4]);
+  bool w1_first = false;
+  if(atoi(argv[5])) w1_first = true;
+  int pop_size = atoi(argv[6]);
+  int max_generations = atoi(argv[7]);
+  int benchmark = stof(argv[8]);
+  int ind_size = 3*c +m -5;
+  matchBoard board;
+  board.m = m;
+  board.n = n;
+  board.c = c;
+  board.p = p;
+  board.w1_first = w1_first;
+  vector<individual> population = genetic_optimization(board,pop_size ,ind_size,max_generations,benchmark);
+  return 0;
+}
+
+int genetic_pate(){
   srand(time(0));
-  //for (int i = 0; i < 5; ++i)
-  //{
+  for (int i = 0; i < 5; ++i)
+  {
     ofstream f;
-    f.open("resultsPateMutacion0,2.txt",ofstream::out | ofstream::app);
+    string arch = ("tiempo" + to_string(i) + ".txt");
+    f.open(arch,ofstream::out | ofstream::app);
+    f << "pop,gen,best" << endl;
     matchBoard board;
     board.n = 6;
     board.m = 7;
@@ -372,10 +416,14 @@ int main(){
     board.w1_first = true;
     int iter = 10;
     int min_gen = 500;
-    vector<individual> population = genetic_optimization(board,15,14,100,100,0.99,min_gen,f);
-    IntVectorPrinter(population[0],f);
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    vector<individual> population = genetic_optimization(board, i*5 +5,14,500,0.99);
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+    f << time_span.count() << endl;
+    //IntVectorPrinter(population[0],f);
 
-  //}
+  }
 
   return 0;
 }
