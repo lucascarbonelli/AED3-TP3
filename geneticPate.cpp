@@ -388,7 +388,7 @@ int main(int argc, const char* argv[]){
   if(atoi(argv[5])) w1_first = true;
   int pop_size = atoi(argv[6]);
   int max_generations = atoi(argv[7]);
-  int benchmark = stof(argv[8]);
+  float benchmark = stof(argv[8]);
   int ind_size = 3*c +m -5;
   matchBoard board;
   board.m = m;
