@@ -97,7 +97,7 @@ pair<float, matchResults> tester_against_random(vector<int> weights, int matches
 
 int main(int argc, const char* argv[]) {
 
-  if (argc < 1)
+  if (argc < 2)
   {
     cout << "Los parámetros de entrada son: " << endl;
     cout << "./geneticOptHelix <parámetros del algoritmo>" << endl;
