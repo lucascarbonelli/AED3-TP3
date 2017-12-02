@@ -233,8 +233,8 @@ void mutation(vector<individual>& population, int prob, int min, int max){
     //cada individuo tiene 1/prob de chances de mutar de sus caracteristicas
     for (int j = 0; j < population[i].size(); ++j){
       if (rand() % prob == 0){
-        unsigned int index = rand() % population[i].size();
-        population[i][index] = min + rand() % max;
+        //unsigned int index = rand() % population[i].size();
+        population[i][j] = min + rand() % max;
       }
     }
   }
