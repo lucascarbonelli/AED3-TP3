@@ -158,7 +158,7 @@ int main(int argc, const char* argv[]) {
   params.news = porcentage(pop_size, news_porc);
   params.breeds = porcentage(pop_size, breeds_porc);
   params.cross_cut_point = floor((board.c-2 + 1 + board.m + board.c-2 + board.c-2)/2);
-  params.probMut = pop_size*maxMutMod;
+  params.probMut = maxMutMod;
   params.maxMut = pop_size*3;
   params.typeScore = typeScore;
   params.player = player;
@@ -255,8 +255,9 @@ int main(int argc, const char* argv[]) {
     log_hel_test << "," << scoreAndMatch.second.won << "," << scoreAndMatch.second.lost << "," << scoreAndMatch.second.tied << "," << scoreAndMatch.second.median_w_time << "," << scoreAndMatch.second.median_l_time;
     log_hel_test << "," << scoreAndMatch_fm.first << "," << scoreAndMatch_fm.second.won << "," << scoreAndMatch_fm.second.lost << "," << scoreAndMatch_fm.second.tied << "," << scoreAndMatch_fm.second.median_w_time << "," << scoreAndMatch_fm.second.median_l_time;
     log_hel_test << "," << pop_size << "," << best_ones_quant << "," << news_porc << "," << breeds_porc << "," << playerFirst << "," << time_span.count();
+    log_hel_test << "," << maxMutMod;
     
-    //weights,trainer,scoreRandom,wonRandom,lostRandom,tiedRandom,m_wRandom,m_lRandom,scoreMinimax,wonMinimax,lostMinimax,tiedMinimax,m_wMinimax,m_lMinimax,pop_size,bes_ones,news_porc,breeds_porc,first,time
+    //weights,trainer,scoreRandom,wonRandom,lostRandom,tiedRandom,m_wRandom,m_lRandom,scoreMinimax,wonMinimax,lostMinimax,tiedMinimax,m_wMinimax,m_lMinimax,pop_size,bes_ones,news_porc,breeds_porc,first,time,prob
   
   } else {
 
