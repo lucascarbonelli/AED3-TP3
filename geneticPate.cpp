@@ -260,20 +260,57 @@ pair<unsigned int, unsigned int> select(vector<unsigned int> ranking, vector<ind
 }
 
 
-individual crossover(individual father1, individual father2, unsigned int cut_point){
+//individual crossover(individual father1, individual father2, unsigned int cut_point){
+//  individual child;
+//  for (size_t i = 0; i < cut_point; i++) {
+//    child.push_back(father1[i]);
+//  }
+//  for (size_t i = cut_point; i < father2.size(); i++) {
+//    child.push_back(father2[i]);
+//  }
+//  return child;
+//}
+
+
+
+individual crossover(individual father1, individual father2, unsigned int num_cutpoints){
+
   individual child;
-  for (size_t i = 0; i < cut_point; i++) {
-    child.push_back(father1[i]);
+  unsigned int cut_point = 0; // El punto de corte inicial es 0;
+  for (int i = 0; i < num_cutpoints; ++i){
+    // Buscamos un nuevo punto de corte entre el anterior y |father|
+    unsigned int new_cutpoint = cut_point + ( rand() % (father1.size() - cut_point + 1) );
+    /* vale cutpoint <= new_cutpoint <= |father| */
+
+    for (int j = cut_point; j < new_cutpoint; ++j){
+      if(i%2) child.push_back(father1[j]); /* si i es par tomamos de father1 */
+      else child.push_back(father2[j]); /* si i es impar tomamos de father2 */
+    }
+
+    if(new_cutpoint >= father1.size()) break;
+    else cut_point = new_cutpoint;
   }
-  for (size_t i = cut_point; i < father2.size(); i++) {
-    child.push_back(father2[i]);
+
+
+  for (int i = cut_point; i < father1.size() ; ++i){
+    if(num_cutpoints % 2) child.push_back(father1[i]); /* si i es par tomamos de father1 */
+    else child.push_back(father2[i]); /* si i es impar tomamos de father2 */
   }
+
+
+
   return child;
 }
 
+
+
+
+
+
 individual breed(individual father1, individual father2){
-  unsigned int crossover_cut_point = rand() % father1.size();
-  individual child = crossover(father1,father2,crossover_cut_point);
+  //unsigned int crossover_cut_point = rand() % father1.size();
+  unsigned int num_cutpoints = 4;
+  individual child = crossover(father1,father2,num_cutpoints);
   return child;
 }
 
@@ -368,8 +405,37 @@ vector<individual> genetic_optimization(matchBoard board, unsigned int pop_size,
 }
 
 
-int main(int argc, const char* argv[]){
+int genetic_pate(){
+  srand(time(0));
+  for (int i = 0; i < 5; ++i)
+  {
+    ofstream f;
+    string arch = ("tiempo" + to_string(i) + ".txt");
+    f.open(arch,ofstream::out | ofstream::app);
+    f << "pop,gen,best" << endl;
+    matchBoard board;
+    board.n = 6;
+    board.m = 7;
+    board.c = 4;
+    board.p = 21;
+    board.w1_first = true;
+    int iter = 20;
+    int min_gen = 500;
+    //high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    vector<individual> population = genetic_optimization(board, i*5 +5,14,500,0.99);
+    //high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    //duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+    //f << time_span.count() << endl;
+    IntVectorPrinter(population[0],f);
 
+  }
+
+  return 0;
+}
+
+
+int main(int argc, const char* argv[]){
+  /*
   if (argc != 9)
   {
     cout << "Los parámetros de entrada son: " << endl;
@@ -397,36 +463,11 @@ int main(int argc, const char* argv[]){
   board.p = p;
   board.w1_first = w1_first;
   vector<individual> population = genetic_optimization(board,pop_size ,ind_size,max_generations,benchmark);
+  */
+  genetic_pate();
   return 0;
 }
 
-int genetic_pate(){
-  srand(time(0));
-  for (int i = 0; i < 5; ++i)
-  {
-    ofstream f;
-    string arch = ("tiempo" + to_string(i) + ".txt");
-    f.open(arch,ofstream::out | ofstream::app);
-    f << "pop,gen,best" << endl;
-    matchBoard board;
-    board.n = 6;
-    board.m = 7;
-    board.c = 4;
-    board.p = 21;
-    board.w1_first = true;
-    int iter = 10;
-    int min_gen = 500;
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
-    vector<individual> population = genetic_optimization(board, i*5 +5,14,500,0.99);
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-    f << time_span.count() << endl;
-    //IntVectorPrinter(population[0],f);
-
-  }
-
-  return 0;
-}
 
 /*
 HACER TRES VARIACIONES DE LA MUTACION Y SACAR RESULTADOS
